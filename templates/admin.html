@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Admin Dashboard - MedLedger-AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Administrator Console</h1>
+        <p class="subtitle">MedLedger-AI</p>
+      </div>
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/logout">Logout</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="messages">
+            {% for category, msg in messages %}
+              <div class="flash {{ category }}">{{ msg }}</div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      <section class="card">
+        <h2>Hospital Participation Status (Current Round: {{ round_status.current_round }})</h2>
+
+        <table class="simple-table">
+          <thead>
+            <tr>
+              <th>Institution</th>
+              <th>Model Submission Status</th>
+              <th>Latest Submission</th>
+              <th>Accuracy</th>
+              <th>Access</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for h in hospitals %}
+              <tr>
+                <td><strong>{{ h.id | replace('hospital', 'Hospital ') }}</strong></td>
+                <td>
+                  {% if h.has_submitted %}
+                    <span class="muted">Submitted (Round {{ h.last_submission.round if h.last_submission else h.current_round }})</span>
+                  {% else %}
+                    <span class="muted">Waiting (Round {{ h.current_round }})</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if h.last_submission %}
+                    <span class="muted" style="font-size: 0.85rem;">
+                      Round {{ h.last_submission.round }}<br>
+                      {{ h.last_submission.timestamp[:10] if h.last_submission.timestamp }}
+                    </span>
+                  {% else %}
+                    <span class="muted">—</span>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if h.last_submission and h.last_submission.accuracy %}
+                    <strong>{{ "%.2f%%"|format(h.last_submission.accuracy * 100) }}</strong>
+                  {% else %}
+                    <span class="muted">—</span>
+                  {% endif %}
+                </td>
+                <td><a class="btn small" href="/hospital/{{ h.id }}">Access</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+
+        <div style="margin-top: 1.5rem; padding: 1rem; background: #f5f5f5;">
+          <p style="margin: 0;">
+            <strong>Round {{ round_status.current_round }} Status:</strong>
+            <br/>
+            {% if round_status.ready_for_aggregation %}
+              <strong>ALL HOSPITALS SUBMITTED - Aggregation Complete</strong>
+            {% else %}
+              <span class="muted">{{ round_status.received_hospitals|length }} / {{ round_status.expected_hospitals }} hospitals submitted</span>
+            {% endif %}
+          </p>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Model Summary</h2>
+
+        <!-- Model Summary Display -->
+        {% if model_status.model_available %}
+          <div class="field" style="background-color: #f5f5f5; padding: 1rem;">
+            <h3 style="margin-top: 0;">Trained Model Ready</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+              <div>
+                <div class="muted" style="font-size: 0.8rem;">Training Rounds</div>
+                <div style="font-size: 1.8rem; font-weight: bold;">{{ model_status.rounds_completed }}</div>
+              </div>
+              <div>
+                <div class="muted" style="font-size: 0.8rem;">Accuracy</div>
+                <div style="font-size: 1.8rem; font-weight: bold;">{{ model_status.accuracy }}</div>
+              </div>
+              <div>
+                <div class="muted" style="font-size: 0.8rem;">Precision</div>
+                <div style="font-size: 1.8rem; font-weight: bold;">{{ model_status.precision }}</div>
+              </div>
+              <div>
+                <div class="muted" style="font-size: 0.8rem;">Recall</div>
+                <div style="font-size: 1.8rem; font-weight: bold;">{{ model_status.recall }}</div>
+              </div>
+              <div>
+                <div class="muted" style="font-size: 0.8rem;">AUC-ROC</div>
+                <div style="font-size: 1.8rem; font-weight: bold;">{{ model_status.auc_roc }}</div>
+              </div>
+              <div>
+                <div class="muted" style="font-size: 0.8rem;">Last Updated</div>
+                <div style="font-size: 0.9rem;">{{ model_status.last_updated }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="guide-card">
+            <div class="guide-card-title">Model Overview</div>
+            <p>
+              The global federated learning model is trained across {{ model_status.institutions }} participating institutions.
+              This summary shows the performance metrics achieved after {{ model_status.rounds_completed }} collaborative training rounds.
+            </p>
+          </div>
+        {% endif %}
+
+        <div class="buttons" style="margin-top: 2rem;">
+          <a class="btn secondary" href="/model-status">View Model Metrics</a>
+          <a class="btn secondary" href="/federated-metrics">Federated Training Status</a>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p><strong>MedLedger-AI</strong> — Project-II (Implementation Phase)</p>
+      <p class="footer-disclaimer">
+        Developed by 22BKT0074 – Yash Sharma, 22BDS0320 – Ritamvaraa Sinha, 22BCE3505 – Anupam Khare
+      </p>
+    </footer>
+  </body>
+</html>

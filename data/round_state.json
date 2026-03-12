@@ -1,0 +1,20 @@
+{
+  "current_round": 3,
+  "expected_hospitals": 5,
+  "received_updates": [],
+  "submissions": {},
+  "aggregation_status": "pending",
+  "last_aggregation": {
+    "round": 2,
+    "timestamp": "2026-01-29T20:58:08.551786Z",
+    "global_model_path": "models\\global\\global_model_round2.pt",
+    "hospitals_aggregated": [
+      "hospital_1",
+      "hospital_2",
+      "hospital_3",
+      "hospital_4",
+      "hospital_5"
+    ]
+  },
+  "created_at": "2026-01-30T00:00:00Z"
+}

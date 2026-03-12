@@ -1,0 +1,117 @@
+{
+  "model_id": "medledger_global_v1",
+  "last_updated": "2026-01-30T14:45:00",
+  "institutions_participated": 5,
+  "training_rounds": 5,
+  "accuracy_per_round": [
+    0.7596,
+    0.9054,
+    0.8638,
+    0.8606,
+    0.8365
+  ],
+  "precision_per_round": [
+    0.7312,
+    0.8923,
+    0.8501,
+    0.8425,
+    0.8189
+  ],
+  "recall_per_round": [
+    0.7654,
+    0.9101,
+    0.8712,
+    0.8698,
+    0.8512
+  ],
+  "f1_score_per_round": [
+    0.7481,
+    0.9011,
+    0.8606,
+    0.8561,
+    0.8348
+  ],
+  "loss_per_round": [
+    0.68,
+    0.42,
+    0.36,
+    0.35,
+    0.38
+  ],
+  "auc_roc_per_round": [
+    0.8234,
+    0.9412,
+    0.9156,
+    0.9089,
+    0.8967
+  ],
+  "final_accuracy": 83.65,
+  "final_precision": 81.89,
+  "final_recall": 85.12,
+  "final_f1_score": 0.8348,
+  "final_loss": 0.38,
+  "final_auc_roc": 0.8967,
+  "model_status": "available",
+  "training_history": [
+    {
+      "round": 1,
+      "timestamp": "2026-01-28T10:00:00",
+      "institutions_participated": 5,
+      "samples_processed": 5217,
+      "accuracy": 0.7596,
+      "precision": 0.7312,
+      "recall": 0.7654,
+      "f1_score": 0.7481,
+      "loss": 0.68,
+      "auc_roc": 0.8234
+    },
+    {
+      "round": 2,
+      "timestamp": "2026-01-28T12:30:00",
+      "institutions_participated": 5,
+      "samples_processed": 5217,
+      "accuracy": 0.9054,
+      "precision": 0.8923,
+      "recall": 0.9101,
+      "f1_score": 0.9011,
+      "loss": 0.42,
+      "auc_roc": 0.9412
+    },
+    {
+      "round": 3,
+      "timestamp": "2026-01-28T15:15:00",
+      "institutions_participated": 5,
+      "samples_processed": 5217,
+      "accuracy": 0.8638,
+      "precision": 0.8501,
+      "recall": 0.8712,
+      "f1_score": 0.8606,
+      "loss": 0.36,
+      "auc_roc": 0.9156
+    },
+    {
+      "round": 4,
+      "timestamp": "2026-01-29T09:00:00",
+      "institutions_participated": 5,
+      "samples_processed": 5217,
+      "accuracy": 0.8606,
+      "precision": 0.8425,
+      "recall": 0.8698,
+      "f1_score": 0.8561,
+      "loss": 0.35,
+      "auc_roc": 0.9089
+    },
+    {
+      "round": 5,
+      "timestamp": "2026-01-29T11:45:00",
+      "institutions_participated": 5,
+      "samples_processed": 5217,
+      "accuracy": 0.8365,
+      "precision": 0.8189,
+      "recall": 0.8512,
+      "f1_score": 0.8348,
+      "loss": 0.38,
+      "auc_roc": 0.8967
+    }
+  ]
+}

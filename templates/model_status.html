@@ -1,0 +1,688 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Global Model Status - MedLedger-AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+      .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+      }
+      
+      .metric-card {
+        background-color: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        padding: 1.5rem;
+        text-align: center;
+      }
+      
+      .metric-card h4 {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 0 0 0.8rem 0;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      
+      .metric-card .value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f6f78;
+      }
+      
+      .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+      
+      .chart-card {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.5rem;
+      }
+      
+      .chart-card h3 {
+        margin-top: 0;
+        border: none;
+        padding: 0;
+        font-size: 1.1rem;
+        color: #1f6f78;
+        margin-bottom: 1rem;
+      }
+      
+      .training-history {
+        margin-top: 2rem;
+      }
+      
+      .history-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+      
+      .history-table thead {
+        background-color: #f0f0f0;
+      }
+      
+      .history-table th {
+        padding: 0.8rem;
+        text-align: left;
+        font-weight: 600;
+        color: #333;
+        border-bottom: 2px solid #999;
+        font-size: 0.9rem;
+      }
+      
+      .history-table td {
+        padding: 0.8rem;
+        border-bottom: 1px solid #ddd;
+        font-size: 0.9rem;
+      }
+      
+      .history-table tbody tr:hover {
+        background-color: #f9f9f9;
+      }
+      
+      .status-badge {
+        display: inline-block;
+        padding: 0.4rem 0.8rem;
+        border-radius: 4px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      
+      .improvement-indicator {
+        font-size: 0.8rem;
+        color: #333;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Global Model Performance Dashboard</h1>
+        <p class="subtitle">Federated Learning Metrics & Training Progress</p>
+      </div>
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/admin">Admin Console</a>
+        <a href="/logout">Logout</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <!-- ROUND COORDINATION STATUS -->
+      <section class="card" style="background-color: #f5f5f5;">
+        <h2 style="margin-top: 0;">Federated Learning Coordination Status</h2>
+
+        <div id="roundStatusContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+          <div style="background: white; padding: 1.5rem;">
+            <h4 style="margin: 0 0 0.8rem 0;">Current Round</h4>
+            <p style="margin: 0; font-size: 2.5rem; font-weight: 700;" id="currentRound">Loading...</p>
+          </div>
+
+          <div style="background: white; padding: 1.5rem;">
+            <h4 style="margin: 0 0 0.8rem 0;">Hospital Submissions</h4>
+            <p style="margin: 0; font-size: 2.5rem; font-weight: 700;" id="submissionCount">0 / 5</p>
+          </div>
+
+          <div style="background: white; padding: 1.5rem;">
+            <h4 style="margin: 0 0 0.8rem 0;">Aggregation Status</h4>
+            <p style="margin: 0; font-size: 1.3rem; font-weight: 600;" id="aggregationStatus">Pending</p>
+          </div>
+        </div>
+
+        <div id="hospitalList" style="margin-top: 1.5rem; padding: 1rem; background: white;">
+          <h4 style="margin: 0 0 1rem 0;">Hospital Submission Status</h4>
+          <div id="hospitalStatusTable" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.5rem;">
+            <p style="color: #999; font-size: 0.9rem;">Loading hospital status...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SUMMARY PANEL -->
+      <section class="card">
+        <h2>Current Model Status</h2>
+        
+        <div style="background-color: #f5f5f5; padding: 1.5rem; margin-bottom: 2rem;">
+          <h3 style="margin: 0 0 1rem 0; border: none; padding: 0;">Model Trained &amp; Active</h3>
+          <div>
+            <p style="margin: 0 0 0.5rem 0;"><strong>Status:</strong> <span class="status-badge">AVAILABLE</span></p>
+            <p style="margin: 0 0 0.5rem 0;"><strong>Training Rounds Completed:</strong> {{ status.rounds_completed }}</p>
+            <p style="margin: 0 0 0.5rem 0;"><strong>Institutions Participated:</strong> {{ status.institutions }}</p>
+            <p style="margin: 0;"><strong>Last Updated:</strong> {{ status.last_updated }}</p>
+          </div>
+        </div>
+
+        <!-- KEY METRICS -->
+        <h3 style="border: none; padding: 0; margin: 0 0 1.5rem 0; font-size: 1.1rem;">Key Performance Metrics</h3>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h4>Accuracy</h4>
+            <div class="value">{{ status.accuracy }}</div>
+          </div>
+          <div class="metric-card">
+            <h4>Precision</h4>
+            <div class="value">{{ status.precision }}</div>
+          </div>
+          <div class="metric-card">
+            <h4>Recall</h4>
+            <div class="value">{{ status.recall }}</div>
+          </div>
+          <div class="metric-card">
+            <h4>F1 Score</h4>
+            <div class="value">{{ status.f1_score }}</div>
+          </div>
+          <div class="metric-card">
+            <h4>AUC-ROC</h4>
+            <div class="value">{{ status.auc_roc }}</div>
+          </div>
+          <div class="metric-card">
+            <h4>Loss</h4>
+            <div class="value" style="color: #c0392b;">{{ status.loss }}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PERFORMANCE CHARTS -->
+      <h2 style="margin-top: 2.5rem;">Training Progress Charts</h2>
+      
+      <div class="charts-container">
+        <!-- Accuracy Chart -->
+        <div class="chart-card">
+          <h3>Accuracy Progress</h3>
+          <canvas id="accuracyChart"></canvas>
+        </div>
+
+        <!-- Precision, Recall, F1 Chart -->
+        <div class="chart-card">
+          <h3>Classification Metrics</h3>
+          <canvas id="metricsChart"></canvas>
+        </div>
+
+        <!-- Loss Chart -->
+        <div class="chart-card">
+          <h3>Training Loss</h3>
+          <canvas id="lossChart"></canvas>
+        </div>
+
+        <!-- AUC-ROC Chart -->
+        <div class="chart-card">
+          <h3>AUC-ROC Progression</h3>
+          <canvas id="aucChart"></canvas>
+        </div>
+
+        <!-- All Metrics Comparison -->
+              <div class="chart-card" style="grid-column: 1 / -1;">
+          <h3>Complete Metrics Comparison Across Rounds</h3>
+          <canvas id="comparisonChart" style="max-height: 300px;"></canvas>
+        </div>
+      </div>
+
+      <!-- TRAINING HISTORY & JOURNEY LOG -->
+      <section class="card training-history">
+        <h2>Model Training Journey</h2>
+        <p style="color: #666; margin-bottom: 1rem;">
+          This log tracks the continuous improvement of the global model as hospitals contribute datasets through federated learning rounds.
+          Each round represents a collaborative training iteration across participating institutions.
+        </p>
+
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Round</th>
+              <th>Timestamp</th>
+              <th>Institutions</th>
+              <th>Samples</th>
+              <th>Accuracy</th>
+              <th>Precision</th>
+              <th>Recall</th>
+              <th>F1 Score</th>
+              <th>Loss</th>
+              <th>AUC-ROC</th>
+              <th>Improvement</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in status.training_history %}
+            <tr>
+              <td><strong>{{ entry.round }}</strong></td>
+              <td>{{ entry.timestamp }}</td>
+              <td>{{ entry.institutions_participated }}</td>
+              <td>{{ entry.samples_processed }}</td>
+              <td>{{ "%.2f%%" % (entry.accuracy * 100) }}</td>
+              <td>{{ "%.2f%%" % (entry.precision * 100) }}</td>
+              <td>{{ "%.2f%%" % (entry.recall * 100) }}</td>
+              <td>{{ "%.4f" % entry.f1_score }}</td>
+              <td>{{ "%.4f" % entry.loss }}</td>
+              <td>{{ "%.2f%%" % (entry.auc_roc * 100) }}</td>
+              <td>
+                {% if entry.round > 1 %}
+                <span class="improvement-indicator">Better</span>
+                {% else %}
+                <span style="color: #999;">Baseline</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+
+      <!-- METRICS SUMMARY TEXT -->
+      <section class="card">
+        <h2>Detailed Metrics Explanation</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <div>
+            <h3 style="border: none; margin-top: 0; font-size: 1.05rem; color: #1f6f78;">Classification Metrics</h3>
+            
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #333;">Accuracy ({{ status.accuracy }})</h4>
+              <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                Overall correctness of the model across all predictions. Represents the percentage of correct predictions out of total predictions.
+              </p>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #333;">Precision ({{ status.precision }})</h4>
+              <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                Of all positive predictions made, how many were correct. Important for minimizing false positives in medical diagnosis.
+              </p>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #333;">Recall ({{ status.recall }})</h4>
+              <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                Of all actual positive cases, how many did the model correctly identify. Critical for not missing diagnoses.
+              </p>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #333;">F1 Score ({{ status.f1_score }})</h4>
+              <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                Harmonic mean of precision and recall. Provides a single metric balancing both false positives and false negatives.
+              </p>
+            </div>
+          </div>
+
+          <div>
+            <h3 style="border: none; margin-top: 0; font-size: 1.05rem; color: #1f6f78;">Performance Indicators</h3>
+            
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #333;">AUC-ROC ({{ status.auc_roc }})</h4>
+              <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                Area Under the Receiver Operating Characteristic curve. Measures the model's ability to distinguish between classes across all probability thresholds.
+              </p>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #333;">Loss ({{ status.loss }})</h4>
+              <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                Training loss value indicating model error. Lower values indicate better model fit. Decreasing loss over rounds shows improvement.
+              </p>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+              <h4 style="margin: 0 0 0.5rem 0; color: #333;">Training Continuity</h4>
+              <p style="margin: 0; font-size: 0.9rem; color: #666;">
+                As hospitals contribute datasets, metrics are logged continuously. The model improves with each federated learning round, creating an unbroken journey of enhancement.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="buttons" style="margin-top: 2rem;">
+        <a class="btn secondary" href="/admin">Back to Admin Console</a>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <p><strong>MedLedger-AI</strong> — Federated Learning Model Management System</p>
+      <p class="footer-disclaimer">
+        Developed by 22BKT0074 – Yash Sharma, 22BDS0320 – Ritamvaraa Sinha, 22BCE3505 – Anupam Khare
+      </p>
+    </footer>
+
+    <script>
+      // Data from backend
+      const roundsData = {{ status.rounds_completed }};
+      const accuracyData = [{% for acc in status.accuracy_array %}{{ acc }}{{ "," if not loop.last }}{% endfor %}];
+      const precisionData = [{% for p in status.precision_array %}{{ p }}{{ "," if not loop.last }}{% endfor %}];
+      const recallData = [{% for r in status.recall_array %}{{ r }}{{ "," if not loop.last }}{% endfor %}];
+      const f1Data = [{% for f in status.f1_array %}{{ f }}{{ "," if not loop.last }}{% endfor %}];
+      const lossData = [{% for l in status.loss_array %}{{ l }}{{ "," if not loop.last }}{% endfor %}];
+      const aucData = [{% for a in status.auc_array %}{{ a }}{{ "," if not loop.last }}{% endfor %}];
+      
+      // Generate round labels
+      const rounds = Array.from({length: roundsData}, (_, i) => 'R' + (i + 1));
+
+      // Common chart options
+      const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+          legend: {
+            display: true,
+            labels: {
+              usePointStyle: true,
+              padding: 15,
+              font: { size: 11, weight: '500' }
+            }
+          }
+        }
+      };
+
+      // 1. Accuracy Chart
+      const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
+      new Chart(accuracyCtx, {
+        type: 'line',
+        data: {
+          labels: rounds,
+          datasets: [{
+            label: 'Accuracy',
+            data: accuracyData,
+            borderColor: '#1f6f78',
+            backgroundColor: 'rgba(0,0,0,0.03)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#1f6f78',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1.0,
+              ticks: { callback: v => (v * 100).toFixed(0) + '%' },
+              title: { display: true, text: 'Accuracy' }
+            },
+            x: { title: { display: true, text: 'Training Round' } }
+          }
+        }
+      });
+
+      // 2. Classification Metrics Chart (Precision, Recall, F1)
+      const metricsCtx = document.getElementById('metricsChart').getContext('2d');
+      new Chart(metricsCtx, {
+        type: 'line',
+        data: {
+          labels: rounds,
+          datasets: [
+            {
+              label: 'Precision',
+              data: precisionData,
+              borderColor: '#3498db',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointBackgroundColor: '#3498db'
+            },
+            {
+              label: 'Recall',
+              data: recallData,
+              borderColor: '#27ae60',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointBackgroundColor: '#27ae60'
+            },
+            {
+              label: 'F1 Score',
+              data: f1Data,
+              borderColor: '#f39c12',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.4,
+              fill: false,
+              pointRadius: 4,
+              pointBackgroundColor: '#f39c12',
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1.0,
+              ticks: { callback: v => (v * 100).toFixed(0) + '%' },
+              title: { display: true, text: 'Score' }
+            },
+            x: { title: { display: true, text: 'Training Round' } }
+          }
+        }
+      });
+
+      // 3. Loss Chart
+      const lossCtx = document.getElementById('lossChart').getContext('2d');
+      new Chart(lossCtx, {
+        type: 'line',
+        data: {
+          labels: rounds,
+          datasets: [{
+            label: 'Loss',
+            data: lossData,
+            borderColor: '#c0392b',
+            backgroundColor: 'rgba(0,0,0,0.03)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#c0392b',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Loss Value' }
+            },
+            x: { title: { display: true, text: 'Training Round' } }
+          }
+        }
+      });
+
+      // 4. AUC-ROC Chart
+      const aucCtx = document.getElementById('aucChart').getContext('2d');
+      new Chart(aucCtx, {
+        type: 'line',
+        data: {
+          labels: rounds,
+          datasets: [{
+            label: 'AUC-ROC',
+            data: aucData,
+            borderColor: '#9b59b6',
+            backgroundColor: 'rgba(0,0,0,0.03)',
+            tension: 0.4,
+            fill: true,
+            pointRadius: 5,
+            pointBackgroundColor: '#9b59b6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1.0,
+              ticks: { callback: v => (v * 100).toFixed(0) + '%' },
+              title: { display: true, text: 'AUC-ROC' }
+            },
+            x: { title: { display: true, text: 'Training Round' } }
+          }
+        }
+      });
+
+      // 5. Complete Comparison Chart
+      const comparisonCtx = document.getElementById('comparisonChart').getContext('2d');
+      new Chart(comparisonCtx, {
+        type: 'line',
+        data: {
+          labels: rounds,
+          datasets: [
+            {
+              label: 'Accuracy',
+              data: accuracyData,
+              borderColor: '#1f6f78',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.3,
+              fill: false,
+              pointRadius: 3,
+              borderWidth: 2
+            },
+            {
+              label: 'Precision',
+              data: precisionData,
+              borderColor: '#3498db',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.3,
+              fill: false,
+              pointRadius: 3,
+              borderWidth: 2
+            },
+            {
+              label: 'Recall',
+              data: recallData,
+              borderColor: '#27ae60',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.3,
+              fill: false,
+              pointRadius: 3,
+              borderWidth: 2
+            },
+            {
+              label: 'F1 Score',
+              data: f1Data,
+              borderColor: '#f39c12',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.3,
+              fill: false,
+              pointRadius: 3,
+              borderWidth: 2
+            },
+            {
+              label: 'AUC-ROC',
+              data: aucData,
+              borderColor: '#9b59b6',
+              backgroundColor: 'rgba(0,0,0,0.03)',
+              tension: 0.3,
+              fill: false,
+              pointRadius: 3,
+              borderWidth: 2
+            }
+          ]
+        },
+        options: {
+          ...commonOptions,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1.0,
+              ticks: { callback: v => (v * 100).toFixed(0) + '%' },
+              title: { display: true, text: 'Score / Percentage' }
+            },
+            x: { title: { display: true, text: 'Training Round' } }
+          }
+        }
+      });
+
+      // ========================================================================
+      // PHASE 2: Fetch and display round coordination status
+      // ========================================================================
+      async function updateRoundStatus() {
+        try {
+          const response = await fetch('/api/round-status');
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          
+          const data = await response.json();
+          
+          // Update current round
+          document.getElementById('currentRound').textContent = data.current_round;
+          
+          // Update submission count
+          const submissionCount = document.getElementById('submissionCount');
+          const received = data.received_hospitals.length;
+          const expected = data.expected_hospitals;
+          submissionCount.textContent = `${received} / ${expected}`;
+          
+          // Color based on completion
+          // keep neutral text color; do not use color accents
+          submissionCount.style.color = '';
+          
+          // Update aggregation status
+          const statusElement = document.getElementById('aggregationStatus');
+          if (data.aggregation_status === 'complete') {
+            statusElement.textContent = 'Aggregated';
+            statusElement.style.color = '';
+          } else if (data.aggregation_status === 'in_progress') {
+            statusElement.textContent = 'Aggregating...';
+            statusElement.style.color = '';
+          } else {
+            statusElement.textContent = 'Waiting';
+            statusElement.style.color = '';
+          }
+          
+          // Update hospital status list
+          const hospitalTable = document.getElementById('hospitalStatusTable');
+          hospitalTable.innerHTML = '';
+          
+          // Show received hospitals
+          data.received_hospitals.forEach(hospital => {
+            const badge = document.createElement('div');
+            badge.style.cssText = 'background: #f5f5f5; color: #333; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; text-align: center;';
+            badge.textContent = `Submitted: ${hospital}`;
+            hospitalTable.appendChild(badge);
+          });
+
+          // Show missing hospitals
+          data.missing_hospitals.forEach(hospital => {
+            const badge = document.createElement('div');
+            badge.style.cssText = 'background: #f5f5f5; color: #333; padding: 0.5rem; border-radius: 4px; font-size: 0.85rem; text-align: center;';
+            badge.textContent = `Waiting: ${hospital}`;
+            hospitalTable.appendChild(badge);
+          });
+          
+          if (hospitalTable.children.length === 0) {
+            hospitalTable.innerHTML = '<p style="color: #999; font-size: 0.9rem; grid-column: 1/-1;">No submissions yet</p>';
+          }
+        } catch (error) {
+          console.error('Error fetching round status:', error);
+          document.getElementById('roundStatusContainer').innerHTML = 
+            '<p style="color: #333;">Error loading round status. Server may be unavailable.</p>';
+        }
+      }
+      
+      // Fetch round status on page load and refresh every 5 seconds
+      updateRoundStatus();
+      setInterval(updateRoundStatus, 5000);
+    </script>
+  </body>
+</html>

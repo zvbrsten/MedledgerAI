@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Federated Model Metrics - MedLedger-AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <h1>Federated Model Metrics</h1>
+        <p class="subtitle">MedLedger-AI</p>
+      </div>
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/admin">Admin Console</a>
+        <a href="/logout">Logout</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      {% if metrics.available %}
+        <!-- MODEL AVAILABLE -->
+        <section class="card">
+          <h2>Model Status</h2>
+          
+          <div class="field" style="background-color: #d4edda; border-left-color: var(--accent-green); padding: 1.5rem;">
+            <h3 style="margin-top: 0; color: #155724; border: none; padding: 0; margin-bottom: 1.5rem;">
+              Trained Model Available
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+              <div>
+                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Model Identifier</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.model_id }}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Training Rounds</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.training_rounds }}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Participating Institutions</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.institutions_participated }}</div>
+              </div>
+              <div>
+                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Final Accuracy</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.final_accuracy }}%</div>
+              </div>
+              <div>
+                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Last Updated</div>
+                <div style="font-size: 0.9rem; color: #555;">{{ metrics.last_updated_formatted }}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ACCURACY CHART -->
+        {% if metrics.accuracy_per_round %}
+          <section class="card">
+            <h2>Training Accuracy Overview</h2>
+            <canvas id="accuracyChart" style="max-height: 300px;"></canvas>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
+              Displayed values represent the accuracy metric calculated after each federated training round.
+            </p>
+          </section>
+        {% endif %}
+
+        <!-- LOSS CHART -->
+        {% if metrics.loss_per_round %}
+          <section class="card">
+            <h2>Training Loss Overview</h2>
+            <canvas id="lossChart" style="max-height: 300px;"></canvas>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
+              Displayed values represent the loss metric calculated after each federated training round.
+            </p>
+          </section>
+        {% endif %}
+
+        <!-- CHART INITIALIZATION SCRIPT -->
+        <script>
+          // Accuracy Chart
+          {% if metrics.accuracy_per_round %}
+            const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
+            const rounds = Array.from({length: {{ metrics.training_rounds }}}, (_, i) => i + 1);
+            const accuracies = {{ metrics.accuracy_per_round | tojson }};
+            
+            new Chart(accuracyCtx, {
+              type: 'line',
+              data: {
+                labels: rounds,
+                datasets: [{
+                  label: 'Accuracy',
+                  data: accuracies,
+                  borderColor: '#1f6f78',
+                  backgroundColor: 'rgba(31, 111, 120, 0.1)',
+                  tension: 0.4,
+                  fill: true,
+                  pointRadius: 4,
+                  pointBackgroundColor: '#1f6f78',
+                  pointBorderColor: '#fff',
+                  pointBorderWidth: 2,
+                  pointHoverRadius: 6
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                  legend: {
+                    display: true,
+                    labels: {
+                      usePointStyle: true,
+                      padding: 15,
+                      font: { size: 12, weight: '500' }
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    max: 1.0,
+                    ticks: {
+                      callback: function(value) { return (value * 100).toFixed(0) + '%'; }
+                    },
+                    title: {
+                      display: true,
+                      text: 'Accuracy'
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Training Round'
+                    }
+                  }
+                }
+              }
+            });
+          {% endif %}
+
+          // Loss Chart
+          {% if metrics.loss_per_round %}
+            const lossCtx = document.getElementById('lossChart').getContext('2d');
+            const losses = {{ metrics.loss_per_round | tojson }};
+            
+            new Chart(lossCtx, {
+              type: 'line',
+              data: {
+                labels: rounds,
+                datasets: [{
+                  label: 'Loss',
+                  data: losses,
+                  borderColor: '#c0392b',
+                  backgroundColor: 'rgba(192, 57, 43, 0.1)',
+                  tension: 0.4,
+                  fill: true,
+                  pointRadius: 4,
+                  pointBackgroundColor: '#c0392b',
+                  pointBorderColor: '#fff',
+                  pointBorderWidth: 2,
+                  pointHoverRadius: 6
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                  legend: {
+                    display: true,
+                    labels: {
+                      usePointStyle: true,
+                      padding: 15,
+                      font: { size: 12, weight: '500' }
+                    }
+                  }
+                },
+                scales: {
+                  y: {
+                    title: {
+                      display: true,
+                      text: 'Loss'
+                    }
+                  },
+                  x: {
+                    title: {
+                      display: true,
+                      text: 'Training Round'
+                    }
+                  }
+                }
+              }
+            });
+          {% endif %}
+        </script>
+
+      {% else %}
+        <!-- MODEL NOT AVAILABLE -->
+        <section class="card">
+          <h2>Model Status</h2>
+          
+          <div class="field" style="background-color: #e7f3ff; border-left-color: var(--primary-teal); padding: 1.5rem;">
+            <h3 style="margin-top: 0; color: #1f6f78; border: none; padding: 0; margin-bottom: 1rem;">
+              Model Metrics Not Available
+            </h3>
+            <p>
+              No federated learning model metrics have been imported yet. Metrics will appear here after the training pipeline exports its results.
+            </p>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem;">
+              Expected artifact location: <code>/data/federated_metrics.json</code>
+            </p>
+          </div>
+        </section>
+      {% endif %}
+    </main>
+
+    <footer class="footer">
+      <p><strong>MedLedger-AI</strong> — Project-II (Implementation Phase)</p>
+      <p class="footer-disclaimer">
+        Developed by 22BKT0074 – Yash Sharma, 22BDS0320 – Ritamvaraa Sinha, 22BCE3505 – Anupam Khare
+      </p>
+    </footer>
+  </body>
+</html>
