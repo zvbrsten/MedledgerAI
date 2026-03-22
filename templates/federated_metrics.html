@@ -3,223 +3,610 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Federated Model Metrics - MedLedger-AI</title>
+    <title>Federated Learning Research Dashboard — MedLedger-AI</title>
     <link rel="stylesheet" href="/static/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+      .research-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .stat-card {
+        background: var(--bg-secondary);
+        border-left: 3px solid var(--primary-teal);
+        padding: 1.25rem 1.5rem;
+        border-radius: 3px;
+      }
+      .stat-card .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-teal);
+        line-height: 1.1;
+      }
+      .stat-card .stat-label {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        margin-top: 0.2rem;
+      }
+      .stat-card .stat-sub {
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        margin-top: 0.4rem;
+      }
+      .comparison-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      .comp-box {
+        padding: 1rem;
+        border-radius: 4px;
+        text-align: center;
+      }
+      .comp-box.fl     { background: #e3f2fd; border: 1px solid #90caf9; }
+      .comp-box.cent   { background: #fce4ec; border: 1px solid #f48fb1; }
+      .comp-box.gap    { background: #e8f5e9; border: 1px solid #a5d6a7; }
+      .comp-box .val   { font-size: 1.8rem; font-weight: 700; }
+      .comp-box .lbl   { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem; }
+      .comp-box.fl  .val  { color: #1565c0; }
+      .comp-box.cent .val { color: #ad1457; }
+      .comp-box.gap  .val { color: #2e7d32; }
+      .dp-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.7rem;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 600;
+      }
+      .dp-on  { background: #d4edda; color: #155724; }
+      .dp-off { background: #f8d7da; color: #721c24; }
+      .hospital-row {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.88rem;
+      }
+      .hospital-row:last-child { border-bottom: none; }
+      .hospital-name { width: 100px; font-weight: 600; color: var(--primary-dark); }
+      .acc-bar-outer {
+        flex: 1;
+        background: var(--bg-secondary);
+        border-radius: 10px;
+        height: 12px;
+        overflow: hidden;
+      }
+      .acc-bar-inner {
+        height: 100%;
+        background: var(--primary-teal);
+        border-radius: 10px;
+        transition: width 0.5s ease;
+      }
+      .acc-value { width: 60px; text-align: right; font-weight: 600; color: var(--primary-teal); }
+      .not-available {
+        background: var(--bg-secondary);
+        border: 1px dashed var(--border-color);
+        border-radius: 4px;
+        padding: 1.5rem;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 0.88rem;
+      }
+      .not-available code {
+        display: block;
+        margin-top: 0.5rem;
+        font-size: 0.82rem;
+        color: var(--primary-teal);
+      }
+    </style>
   </head>
   <body>
+
     <header class="topbar">
       <div>
-        <h1>Federated Model Metrics</h1>
-        <p class="subtitle">MedLedger-AI</p>
+        <h1>Research Dashboard</h1>
+        <p class="subtitle">MedLedger-AI — Federated Learning Analysis</p>
       </div>
       <nav class="nav">
         <a href="/">Home</a>
-        <a href="/admin">Admin Console</a>
+        <a href="/admin">Admin</a>
+        <a href="/model-status">Model Status</a>
         <a href="/logout">Logout</a>
       </nav>
     </header>
 
     <main class="container">
-      {% if metrics.available %}
-        <!-- MODEL AVAILABLE -->
-        <section class="card">
-          <h2>Model Status</h2>
-          
-          <div class="field" style="background-color: #d4edda; border-left-color: var(--accent-green); padding: 1.5rem;">
-            <h3 style="margin-top: 0; color: #155724; border: none; padding: 0; margin-bottom: 1.5rem;">
-              Trained Model Available
-            </h3>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-              <div>
-                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Model Identifier</div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.model_id }}</div>
-              </div>
-              <div>
-                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Training Rounds</div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.training_rounds }}</div>
-              </div>
-              <div>
-                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Participating Institutions</div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.institutions_participated }}</div>
-              </div>
-              <div>
-                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Final Accuracy</div>
-                <div style="font-size: 1.3rem; font-weight: 700; color: #1f6f78;">{{ metrics.final_accuracy }}%</div>
-              </div>
-              <div>
-                <div style="font-size: 0.85rem; color: #555; font-weight: 500; margin-bottom: 0.5rem;">Last Updated</div>
-                <div style="font-size: 0.9rem; color: #555;">{{ metrics.last_updated_formatted }}</div>
-              </div>
+
+      <!-- ── Top Stats ───────────────────────────────────────────────────── -->
+      <div class="research-grid" id="topStats">
+        <div class="stat-card">
+          <div class="stat-value" id="statRounds">—</div>
+          <div class="stat-label">FL Rounds Completed</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statAccuracy">—</div>
+          <div class="stat-label">FL Global Accuracy (latest round)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statF1">—</div>
+          <div class="stat-label">F1 Score (latest round)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="statComm">—</div>
+          <div class="stat-label">Total Data Transmitted</div>
+          <div class="stat-sub" id="statCommSub"></div>
+        </div>
+      </div>
+
+      <!-- ── FL vs Centralized Comparison ───────────────────────────────── -->
+      <section class="card">
+        <h2>Federated vs Centralized Accuracy</h2>
+        <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:1rem;">
+          Centralized training combines all hospital data — privacy-violating but optimal accuracy.
+          The gap shows the privacy cost of federated learning.
+        </p>
+        <div class="comparison-row" id="comparisonRow">
+          <div class="comp-box fl">
+            <div class="val" id="compFL">—</div>
+            <div class="lbl">FL Accuracy (latest)</div>
+          </div>
+          <div class="comp-box cent">
+            <div class="val" id="compCent">—</div>
+            <div class="lbl">Centralized Accuracy</div>
+          </div>
+          <div class="comp-box gap">
+            <div class="val" id="compGap">—</div>
+            <div class="lbl">Privacy Cost (gap)</div>
+          </div>
+        </div>
+        <div id="centNotAvailable" style="display:none;">
+          <div class="not-available">
+            Centralized baseline not yet computed.
+            <code>python scripts/centralized_train.py --data-dir ./data/hospitals --epochs 5</code>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Convergence Chart ────────────────────────────────────────────── -->
+      <section class="card">
+        <h2>FL Convergence Over Rounds</h2>
+        <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:1rem;">
+          Global model accuracy per FL round vs centralized baseline.
+          Convergence toward the centralized line proves federated learning is effective.
+        </p>
+        <canvas id="convergenceChart" style="max-height:320px;"></canvas>
+        <div id="convergenceEmpty" class="not-available" style="display:none;">
+          No FL rounds completed yet. Start training to see convergence data.
+        </div>
+      </section>
+
+      <!-- ── Per-Hospital Accuracy ────────────────────────────────────────── -->
+      <section class="card">
+        <h2>Per-Hospital Accuracy (Latest Round)</h2>
+        <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:1rem;">
+          Each hospital trains on its own local data. Variation shows data heterogeneity.
+          FedAvg combines these into a global model that outperforms any individual hospital.
+        </p>
+        <div id="hospitalBars">
+          <div class="not-available">Loading hospital metrics...</div>
+        </div>
+      </section>
+
+      <!-- ── Per-Hospital Convergence Lines ──────────────────────────────── -->
+      <section class="card">
+        <h2>Per-Hospital Accuracy Over Rounds</h2>
+        <canvas id="hospitalLinesChart" style="max-height:320px;"></canvas>
+        <div id="hospitalLinesEmpty" class="not-available" style="display:none;">
+          Need at least 2 rounds of data to show convergence lines.
+        </div>
+      </section>
+
+      <!-- ── Communication Cost ────────────────────────────────────────────── -->
+      <section class="card">
+        <h2>Communication Cost Analysis</h2>
+        <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:1rem;">
+          FL only transmits model weights, not raw data.
+          This shows the bandwidth savings vs a naive data-sharing approach.
+        </p>
+        <canvas id="commChart" style="max-height:280px;"></canvas>
+        <div id="commEmpty" class="not-available" style="display:none;">
+          No communication data yet.
+        </div>
+        <div id="commSummary" style="margin-top:1.5rem; display:none;">
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:1rem;">
+            <div class="stat-card">
+              <div class="stat-value" id="commActual">—</div>
+              <div class="stat-label">Actual Transmitted (MB)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="commRaw">—</div>
+              <div class="stat-label">Raw Data Equivalent (MB)</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" id="commSavings">—</div>
+              <div class="stat-label">Bandwidth Saved</div>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <!-- ACCURACY CHART -->
-        {% if metrics.accuracy_per_round %}
-          <section class="card">
-            <h2>Training Accuracy Overview</h2>
-            <canvas id="accuracyChart" style="max-height: 300px;"></canvas>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
-              Displayed values represent the accuracy metric calculated after each federated training round.
-            </p>
-          </section>
-        {% endif %}
+      <!-- ── Differential Privacy Status ─────────────────────────────────── -->
+      <section class="card">
+        <h2>Differential Privacy Status</h2>
+        <p style="color:var(--text-secondary); font-size:0.88rem; margin-bottom:1rem;">
+          DP adds calibrated Gaussian noise to weights before submission,
+          preventing patient data reconstruction. Lower epsilon = stronger privacy.
+        </p>
+        <div id="dpStatus">
+          <div class="not-available">Loading DP status...</div>
+        </div>
+      </section>
 
-        <!-- LOSS CHART -->
-        {% if metrics.loss_per_round %}
-          <section class="card">
-            <h2>Training Loss Overview</h2>
-            <canvas id="lossChart" style="max-height: 300px;"></canvas>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">
-              Displayed values represent the loss metric calculated after each federated training round.
-            </p>
-          </section>
-        {% endif %}
+      <!-- ── Metrics Table ─────────────────────────────────────────────────── -->
+      <section class="card">
+        <h2>Round-by-Round Metrics</h2>
+        <div id="metricsTable">
+          <div class="not-available">Loading metrics...</div>
+        </div>
+      </section>
 
-        <!-- CHART INITIALIZATION SCRIPT -->
-        <script>
-          // Accuracy Chart
-          {% if metrics.accuracy_per_round %}
-            const accuracyCtx = document.getElementById('accuracyChart').getContext('2d');
-            const rounds = Array.from({length: {{ metrics.training_rounds }}}, (_, i) => i + 1);
-            const accuracies = {{ metrics.accuracy_per_round | tojson }};
-            
-            new Chart(accuracyCtx, {
-              type: 'line',
-              data: {
-                labels: rounds,
-                datasets: [{
-                  label: 'Accuracy',
-                  data: accuracies,
-                  borderColor: '#1f6f78',
-                  backgroundColor: 'rgba(31, 111, 120, 0.1)',
-                  tension: 0.4,
-                  fill: true,
-                  pointRadius: 4,
-                  pointBackgroundColor: '#1f6f78',
-                  pointBorderColor: '#fff',
-                  pointBorderWidth: 2,
-                  pointHoverRadius: 6
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                  legend: {
-                    display: true,
-                    labels: {
-                      usePointStyle: true,
-                      padding: 15,
-                      font: { size: 12, weight: '500' }
-                    }
-                  }
-                },
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    max: 1.0,
-                    ticks: {
-                      callback: function(value) { return (value * 100).toFixed(0) + '%'; }
-                    },
-                    title: {
-                      display: true,
-                      text: 'Accuracy'
-                    }
-                  },
-                  x: {
-                    title: {
-                      display: true,
-                      text: 'Training Round'
-                    }
-                  }
-                }
-              }
-            });
-          {% endif %}
-
-          // Loss Chart
-          {% if metrics.loss_per_round %}
-            const lossCtx = document.getElementById('lossChart').getContext('2d');
-            const losses = {{ metrics.loss_per_round | tojson }};
-            
-            new Chart(lossCtx, {
-              type: 'line',
-              data: {
-                labels: rounds,
-                datasets: [{
-                  label: 'Loss',
-                  data: losses,
-                  borderColor: '#c0392b',
-                  backgroundColor: 'rgba(192, 57, 43, 0.1)',
-                  tension: 0.4,
-                  fill: true,
-                  pointRadius: 4,
-                  pointBackgroundColor: '#c0392b',
-                  pointBorderColor: '#fff',
-                  pointBorderWidth: 2,
-                  pointHoverRadius: 6
-                }]
-              },
-              options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                plugins: {
-                  legend: {
-                    display: true,
-                    labels: {
-                      usePointStyle: true,
-                      padding: 15,
-                      font: { size: 12, weight: '500' }
-                    }
-                  }
-                },
-                scales: {
-                  y: {
-                    title: {
-                      display: true,
-                      text: 'Loss'
-                    }
-                  },
-                  x: {
-                    title: {
-                      display: true,
-                      text: 'Training Round'
-                    }
-                  }
-                }
-              }
-            });
-          {% endif %}
-        </script>
-
-      {% else %}
-        <!-- MODEL NOT AVAILABLE -->
-        <section class="card">
-          <h2>Model Status</h2>
-          
-          <div class="field" style="background-color: #e7f3ff; border-left-color: var(--primary-teal); padding: 1.5rem;">
-            <h3 style="margin-top: 0; color: #1f6f78; border: none; padding: 0; margin-bottom: 1rem;">
-              Model Metrics Not Available
-            </h3>
-            <p>
-              No federated learning model metrics have been imported yet. Metrics will appear here after the training pipeline exports its results.
-            </p>
-            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 1rem;">
-              Expected artifact location: <code>/data/federated_metrics.json</code>
-            </p>
-          </div>
-        </section>
-      {% endif %}
     </main>
 
     <footer class="footer">
-      <p><strong>MedLedger-AI</strong> — Project-II (Implementation Phase)</p>
+      <p><strong>MedLedger-AI</strong> — Privacy-Preserving Federated Learning</p>
       <p class="footer-disclaimer">
         Developed by 22BKT0074 – Yash Sharma, 22BDS0320 – Ritamvaraa Sinha, 22BCE3505 – Anupam Khare
       </p>
     </footer>
+
+    <!-- Chart.js MUST be loaded before the script block below -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+      let convergenceChart  = null;
+      let hospitalLinesChart = null;
+      let commChart          = null;
+
+      const HOSPITAL_COLORS = {
+        hospital_1: '#1f6f78',
+        hospital_2: '#e67e22',
+        hospital_3: '#8e44ad',
+        hospital_4: '#27ae60',
+        hospital_5: '#e74c3c',
+      };
+
+      async function loadAll() {
+        try {
+          const [summaryRes, commRes] = await Promise.all([
+            fetch('/api/research-summary'),
+            fetch('/api/communication-stats')
+          ]);
+
+          const summary  = await summaryRes.json();
+          const commData = await commRes.json();
+
+          if (summary.success) {
+            renderTopStats(summary);
+            renderComparison(summary);
+            renderConvergenceChart(summary);
+            renderHospitalBars(summary.per_hospital);
+            renderHospitalLines(summary.per_hospital);
+            renderDPStatus(summary.per_hospital);
+            renderMetricsTable(summary.fl_metrics);
+          }
+
+          if (commData.success) {
+            renderCommChart(commData.stats);
+            renderCommSummary(commData.stats);
+          }
+
+        } catch(e) {
+          console.error('Failed to load research data:', e);
+        }
+      }
+
+      function renderTopStats(summary) {
+        const fl = summary.fl_metrics;
+        if (!fl || !fl.available) return;
+        document.getElementById('statRounds').textContent   = fl.training_rounds || 0;
+        document.getElementById('statAccuracy').textContent =
+          fl.final_accuracy ? fl.final_accuracy.toFixed(2) + '%' : '—';
+        document.getElementById('statF1').textContent =
+          fl.final_f1_score ? fl.final_f1_score.toFixed(4) : '—';
+      }
+
+      function renderComparison(summary) {
+        const fl   = summary.fl_metrics;
+        const cent = summary.centralized;
+        const flAcc = fl && fl.available ? fl.final_accuracy : null;
+
+        document.getElementById('compFL').textContent =
+          flAcc !== null ? flAcc.toFixed(2) + '%' : '—';
+
+        if (cent) {
+          document.getElementById('centNotAvailable').style.display = 'none';
+          const centAcc = cent.accuracy * 100;
+          document.getElementById('compCent').textContent = centAcc.toFixed(2) + '%';
+          if (flAcc !== null) {
+            const gap = centAcc - flAcc;
+            document.getElementById('compGap').textContent =
+              (gap >= 0 ? '-' : '+') + Math.abs(gap).toFixed(2) + '%';
+          }
+        } else {
+          document.getElementById('centNotAvailable').style.display = 'block';
+          document.getElementById('compCent').textContent = 'N/A';
+          document.getElementById('compGap').textContent  = 'N/A';
+        }
+      }
+
+      function renderConvergenceChart(summary) {
+        const fl   = summary.fl_metrics;
+        const cent = summary.centralized;
+
+        if (!fl || !fl.available || !fl.accuracy_per_round || fl.accuracy_per_round.length === 0) {
+          document.getElementById('convergenceChart').style.display = 'none';
+          document.getElementById('convergenceEmpty').style.display = 'block';
+          return;
+        }
+
+        const rounds   = fl.accuracy_per_round.map((_, i) => `Round ${i + 1}`);
+        const flAccs   = fl.accuracy_per_round.map(a => parseFloat((a * 100).toFixed(2)));
+        const datasets = [{
+          label:           'FL Global Accuracy',
+          data:            flAccs,
+          borderColor:     '#1f6f78',
+          backgroundColor: 'rgba(31,111,120,0.1)',
+          tension:         0.4,
+          fill:            true,
+          pointRadius:     5,
+          pointBackgroundColor: '#1f6f78',
+          borderWidth:     2,
+        }];
+
+        if (cent) {
+          const centAcc = parseFloat((cent.accuracy * 100).toFixed(2));
+          datasets.push({
+            label:       'Centralized Baseline',
+            data:        rounds.map(() => centAcc),
+            borderColor: '#e74c3c',
+            borderDash:  [6, 4],
+            borderWidth: 2,
+            pointRadius: 0,
+            fill:        false,
+            tension:     0,
+          });
+        }
+
+        if (convergenceChart) convergenceChart.destroy();
+        const ctx = document.getElementById('convergenceChart').getContext('2d');
+        convergenceChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels: rounds, datasets },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: true },
+              tooltip: { callbacks: { label: c => `${c.dataset.label}: ${c.raw}%` } }
+            },
+            scales: {
+              y: {
+                min: 50, max: 100,
+                ticks: { callback: v => v + '%' },
+                title: { display: true, text: 'Accuracy (%)' }
+              },
+              x: { title: { display: true, text: 'FL Round' } }
+            }
+          }
+        });
+      }
+
+      function renderHospitalBars(perHospital) {
+        const container = document.getElementById('hospitalBars');
+        if (!perHospital || Object.keys(perHospital).length === 0) {
+          container.innerHTML = '<div class="not-available">No hospital data yet.</div>';
+          return;
+        }
+        let html = '';
+        for (const [hid, rounds] of Object.entries(perHospital)) {
+          const latest  = rounds[rounds.length - 1];
+          const acc     = (latest.accuracy * 100).toFixed(2);
+          const color   = HOSPITAL_COLORS[hid] || '#1f6f78';
+          const dpBadge = latest.dp_enabled
+            ? '<span class="dp-badge dp-on">🔒 DP ON</span>'
+            : '<span class="dp-badge dp-off">DP OFF</span>';
+          html += `
+            <div class="hospital-row">
+              <div class="hospital-name">${hid.replace('_',' ').replace('hospital','Hosp.')}</div>
+              <div class="acc-bar-outer">
+                <div class="acc-bar-inner" style="width:${acc}%;background:${color};"></div>
+              </div>
+              <div class="acc-value">${acc}%</div>
+              ${dpBadge}
+            </div>`;
+        }
+        container.innerHTML = html;
+      }
+
+      function renderHospitalLines(perHospital) {
+        if (!perHospital || Object.keys(perHospital).length === 0) {
+          document.getElementById('hospitalLinesChart').style.display = 'none';
+          document.getElementById('hospitalLinesEmpty').style.display = 'block';
+          return;
+        }
+        const hasEnough = Object.values(perHospital).some(r => r.length >= 2);
+        if (!hasEnough) {
+          document.getElementById('hospitalLinesChart').style.display = 'none';
+          document.getElementById('hospitalLinesEmpty').style.display = 'block';
+          return;
+        }
+        const maxRounds = Math.max(...Object.values(perHospital).map(r => r.length));
+        const labels    = Array.from({length: maxRounds}, (_, i) => `Round ${i + 1}`);
+        const datasets  = [];
+        for (const [hid, rounds] of Object.entries(perHospital)) {
+          datasets.push({
+            label:           hid.replace('hospital_', 'Hospital '),
+            data:            rounds.map(r => parseFloat((r.accuracy * 100).toFixed(2))),
+            borderColor:     HOSPITAL_COLORS[hid] || '#888',
+            backgroundColor: 'transparent',
+            tension:         0.3,
+            pointRadius:     4,
+            borderWidth:     2,
+          });
+        }
+        if (hospitalLinesChart) hospitalLinesChart.destroy();
+        const ctx = document.getElementById('hospitalLinesChart').getContext('2d');
+        hospitalLinesChart = new Chart(ctx, {
+          type: 'line',
+          data: { labels, datasets },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: true } },
+            scales: {
+              y: {
+                min: 50, max: 100,
+                ticks: { callback: v => v + '%' },
+                title: { display: true, text: 'Test Accuracy (%)' }
+              },
+              x: { title: { display: true, text: 'FL Round' } }
+            }
+          }
+        });
+      }
+
+      function renderCommChart(stats) {
+        if (!stats || !stats.rounds || stats.rounds.length === 0) {
+          document.getElementById('commChart').style.display = 'none';
+          document.getElementById('commEmpty').style.display = 'block';
+          return;
+        }
+        const labels = stats.rounds.map(r => `Round ${r.round}`);
+        const actual = stats.rounds.map(r => r.total_mb);
+        const raw    = stats.rounds.map(r => r.raw_estimate_mb);
+
+        if (commChart) commChart.destroy();
+        const ctx = document.getElementById('commChart').getContext('2d');
+        commChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels,
+            datasets: [
+              {
+                label:           'Weights Transmitted (MB)',
+                data:            actual,
+                backgroundColor: 'rgba(31,111,120,0.7)',
+                borderColor:     '#1f6f78',
+                borderWidth:     1,
+              },
+              {
+                label:           'Raw Data Equivalent (MB)',
+                data:            raw,
+                backgroundColor: 'rgba(231,76,60,0.3)',
+                borderColor:     '#e74c3c',
+                borderWidth:     1,
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            plugins: { legend: { display: true } },
+            scales: {
+              y: { title: { display: true, text: 'Size (MB)' } },
+              x: { title: { display: true, text: 'FL Round' } }
+            }
+          }
+        });
+
+        document.getElementById('statComm').textContent =
+          stats.total_mb_transmitted.toFixed(1) + ' MB';
+        document.getElementById('statCommSub').textContent =
+          `Saved ${stats.total_savings_pct}% vs raw data sharing`;
+      }
+
+      function renderCommSummary(stats) {
+        if (!stats || !stats.rounds || stats.rounds.length === 0) return;
+        document.getElementById('commSummary').style.display  = 'block';
+        document.getElementById('commActual').textContent     = stats.total_mb_transmitted.toFixed(1);
+        document.getElementById('commRaw').textContent        = stats.total_raw_data_estimate.toFixed(1);
+        document.getElementById('commSavings').textContent    = stats.total_savings_pct + '%';
+      }
+
+      function renderDPStatus(perHospital) {
+        const container = document.getElementById('dpStatus');
+        if (!perHospital || Object.keys(perHospital).length === 0) {
+          container.innerHTML = '<div class="not-available">No submission data yet.</div>';
+          return;
+        }
+        let html = `<table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+          <thead style="background:var(--bg-secondary);">
+            <tr>
+              <th style="padding:0.6rem 1rem;text-align:left;">Hospital</th>
+              <th style="padding:0.6rem 1rem;text-align:left;">DP Status</th>
+              <th style="padding:0.6rem 1rem;text-align:left;">Epsilon (ε)</th>
+              <th style="padding:0.6rem 1rem;text-align:left;">Rounds Submitted</th>
+            </tr>
+          </thead><tbody>`;
+        for (const [hid, rounds] of Object.entries(perHospital)) {
+          const latest    = rounds[rounds.length - 1];
+          const dpEnabled = latest.dp_enabled;
+          const epsilon   = latest.epsilon || '—';
+          const badge     = dpEnabled
+            ? '<span class="dp-badge dp-on">🔒 Enabled</span>'
+            : '<span class="dp-badge dp-off">Disabled</span>';
+          html += `<tr style="border-bottom:1px solid var(--border-color);">
+            <td style="padding:0.6rem 1rem;font-weight:600;">${hid.replace('_',' ')}</td>
+            <td style="padding:0.6rem 1rem;">${badge}</td>
+            <td style="padding:0.6rem 1rem;">${dpEnabled ? epsilon : '—'}</td>
+            <td style="padding:0.6rem 1rem;">${rounds.length}</td>
+          </tr>`;
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+
+      function renderMetricsTable(fl) {
+        const container = document.getElementById('metricsTable');
+        if (!fl || !fl.available || !fl.training_history || fl.training_history.length === 0) {
+          container.innerHTML = '<div class="not-available">No training history yet.</div>';
+          return;
+        }
+        let html = `<table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+          <thead style="background:var(--bg-secondary);border-bottom:2px solid var(--primary-teal);">
+            <tr>
+              <th style="padding:0.7rem 1rem;text-align:left;">Round</th>
+              <th style="padding:0.7rem 1rem;text-align:left;">Accuracy</th>
+              <th style="padding:0.7rem 1rem;text-align:left;">Precision</th>
+              <th style="padding:0.7rem 1rem;text-align:left;">Recall</th>
+              <th style="padding:0.7rem 1rem;text-align:left;">F1</th>
+              <th style="padding:0.7rem 1rem;text-align:left;">AUC-ROC</th>
+              <th style="padding:0.7rem 1rem;text-align:left;">Loss</th>
+              <th style="padding:0.7rem 1rem;text-align:left;">Samples</th>
+            </tr>
+          </thead><tbody>`;
+        for (const h of fl.training_history) {
+          html += `<tr style="border-bottom:1px solid var(--border-color);">
+            <td style="padding:0.65rem 1rem;font-weight:600;">Round ${h.round}</td>
+            <td style="padding:0.65rem 1rem;color:var(--primary-teal);font-weight:600;">
+              ${(h.accuracy*100).toFixed(2)}%
+            </td>
+            <td style="padding:0.65rem 1rem;">${(h.precision*100).toFixed(2)}%</td>
+            <td style="padding:0.65rem 1rem;">${(h.recall*100).toFixed(2)}%</td>
+            <td style="padding:0.65rem 1rem;">${h.f1_score.toFixed(4)}</td>
+            <td style="padding:0.65rem 1rem;">${(h.auc_roc*100).toFixed(2)}%</td>
+            <td style="padding:0.65rem 1rem;">${h.loss.toFixed(4)}</td>
+            <td style="padding:0.65rem 1rem;">${h.samples_processed?.toLocaleString()||'—'}</td>
+          </tr>`;
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }
+
+      loadAll();
+      setInterval(loadAll, 10000);
+    </script>
+
   </body>
 </html>

@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Blockchain Audit Ledger — MedLedger-AI</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+      /* ── Ledger-specific styles ─────────────────────────────────────────── */
+      .ledger-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .chain-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-weight: 600;
+      }
+      .chain-status.connected {
+        background: #d4edda;
+        color: #155724;
+      }
+      .chain-status.disconnected {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .chain-status .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: currentColor;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.4; }
+      }
+
+      /* ── Event table ────────────────────────────────────────────────────── */
+      .event-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+      }
+      .event-table thead {
+        background: var(--bg-secondary);
+        border-bottom: 2px solid var(--primary-teal);
+      }
+      .event-table th {
+        padding: 0.85rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--primary-dark);
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      .event-table td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+        vertical-align: middle;
+      }
+      .event-table tr:last-child td {
+        border-bottom: none;
+      }
+      .event-table tr:hover td {
+        background: var(--bg-tertiary);
+      }
+
+      /* ── Event type badges ──────────────────────────────────────────────── */
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.65rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+      }
+      .badge-blue  { background: #cce5ff; color: #004085; }
+      .badge-green { background: #d4edda; color: #155724; }
+      .badge-gray  { background: #e2e3e5; color: #383d41; }
+
+      /* ── Hash display ───────────────────────────────────────────────────── */
+      .hash-cell {
+        font-family: var(--font-mono);
+        font-size: 0.78rem;
+        color: var(--text-secondary);
+        cursor: pointer;
+      }
+      .hash-cell:hover {
+        color: var(--primary-teal);
+      }
+
+      /* ── Empty state ────────────────────────────────────────────────────── */
+      .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--text-muted);
+      }
+      .empty-state .icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      .empty-state p {
+        font-size: 1rem;
+        margin: 0;
+      }
+
+      /* ── Stats row ──────────────────────────────────────────────────────── */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+      .stat-box {
+        background: var(--bg-secondary);
+        border-left: 3px solid var(--primary-teal);
+        padding: 1rem 1.2rem;
+        border-radius: 3px;
+      }
+      .stat-box .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary-teal);
+        line-height: 1;
+      }
+      .stat-box .stat-label {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-top: 0.25rem;
+      }
+
+      /* ── Refresh indicator ──────────────────────────────────────────────── */
+      .refresh-note {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        margin-left: auto;
+      }
+    </style>
+  </head>
+  <body>
+
+    <header class="topbar">
+      <div>
+        <h1>Blockchain Audit Ledger</h1>
+        <p class="subtitle">MedLedger-AI — Immutable FL Event Log</p>
+      </div>
+      <nav class="nav">
+        <a href="/">Home</a>
+        <a href="/admin">Admin</a>
+        <a href="/model-status">Model Status</a>
+        <a href="/logout">Logout</a>
+      </nav>
+    </header>
+
+    <main class="container">
+
+      <!-- ── Chain Status Bar ─────────────────────────────────────────────── -->
+      <div class="ledger-header">
+        <h2 style="margin:0">On-Chain Events</h2>
+        <span class="chain-status" id="chainStatus">
+          <span class="dot"></span>
+          <span id="chainStatusText">Connecting...</span>
+        </span>
+        <span class="refresh-note" id="refreshNote">Auto-refreshes every 5s</span>
+      </div>
+
+      <!-- ── Stats ───────────────────────────────────────────────────────── -->
+      <div class="stats-row" id="statsRow">
+        <div class="stat-box">
+          <div class="stat-value" id="statSubmissions">—</div>
+          <div class="stat-label">Weight Submissions</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statAggregations">—</div>
+          <div class="stat-label">Aggregations</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statLogins">—</div>
+          <div class="stat-label">Hospital Logins</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="statTotal">—</div>
+          <div class="stat-label">Total Events</div>
+        </div>
+      </div>
+
+      <!-- ── Event Table ─────────────────────────────────────────────────── -->
+      <section class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:1.25rem 1.5rem; border-bottom:1px solid var(--border-color);">
+          <strong>All Events</strong>
+          <span class="muted" style="font-size:0.85rem; margin-left:0.5rem;">
+            Newest first — immutable once logged
+          </span>
+        </div>
+
+        <div id="tableContainer">
+          <div class="empty-state">
+            <div class="icon">⛓️</div>
+            <p>Loading blockchain events...</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Info Box ─────────────────────────────────────────────────────── -->
+      <section class="card guide-card" style="margin-top:1.5rem;">
+        <div class="guide-card-title">About This Ledger</div>
+        <p>
+          Every federated learning event is permanently recorded on a local Ethereum
+          blockchain (Hardhat). Records cannot be modified or deleted — this is the
+          tamper-proof audit trail.
+        </p>
+        <p style="margin-bottom:0;">
+          <strong>What is logged:</strong>
+          each hospital weight submission (with SHA-256 hash of weights),
+          each FedAvg aggregation (with SHA-256 hash of global model),
+          and each hospital login.
+          No patient data ever appears here — only hashes and metrics.
+        </p>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <p><strong>MedLedger-AI</strong> — Federated Learning with Blockchain Auditability</p>
+      <p class="footer-disclaimer">
+        Developed by 22BKT0074 – Yash Sharma, 22BDS0320 – Ritamvaraa Sinha, 22BCE3505 – Anupam Khare
+      </p>
+    </footer>
+
+    <script>
+      let lastEventCount = 0;
+
+      function renderBadge(type, label) {
+        const cls = type === 'submission' ? 'badge-blue'
+                  : type === 'aggregation' ? 'badge-green'
+                  : 'badge-gray';
+        return `<span class="badge ${cls}">${label}</span>`;
+      }
+
+      function renderRow(ev) {
+        let details = '';
+
+        if (ev.type === 'submission') {
+          details = `
+            <td>${ev.hospital_id}</td>
+            <td>Round ${ev.round_number}</td>
+            <td class="hash-cell" title="${ev.weights_hash_full}">${ev.weights_hash}</td>
+            <td>${ev.accuracy_pct}%</td>
+            <td>${ev.num_samples.toLocaleString()}</td>
+          `;
+        } else if (ev.type === 'aggregation') {
+          details = `
+            <td colspan="2">Round ${ev.round_number} — ${ev.hospitals_list}</td>
+            <td class="hash-cell" title="${ev.global_model_hash_full}">${ev.global_model_hash}</td>
+            <td colspan="2">${ev.total_samples.toLocaleString()} total samples</td>
+          `;
+        } else {
+          details = `
+            <td>${ev.hospital_id}</td>
+            <td colspan="4" class="muted">Login event</td>
+          `;
+        }
+
+        return `
+          <tr>
+            <td>${renderBadge(ev.type, ev.type_label)}</td>
+            ${details}
+            <td class="muted" style="font-size:0.8rem; white-space:nowrap;">
+              ${ev.timestamp_human}
+            </td>
+          </tr>
+        `;
+      }
+
+      function renderTable(events) {
+        if (!events || events.length === 0) {
+          return `
+            <div class="empty-state">
+              <div class="icon">⛓️</div>
+              <p>No events logged yet. Start the federated learning demo to see events appear here.</p>
+            </div>
+          `;
+        }
+
+        return `
+          <table class="event-table">
+            <thead>
+              <tr>
+                <th>Event Type</th>
+                <th>Hospital / Info</th>
+                <th>Round / Detail</th>
+                <th>Hash (truncated)</th>
+                <th>Metric</th>
+                <th>Samples</th>
+                <th>Timestamp (UTC)</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${events.map(renderRow).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      function updateStats(events) {
+        const submissions  = events.filter(e => e.type === 'submission').length;
+        const aggregations = events.filter(e => e.type === 'aggregation').length;
+        const logins       = events.filter(e => e.type === 'login').length;
+
+        document.getElementById('statSubmissions').textContent  = submissions;
+        document.getElementById('statAggregations').textContent = aggregations;
+        document.getElementById('statLogins').textContent       = logins;
+        document.getElementById('statTotal').textContent        = events.length;
+      }
+
+      async function fetchEvents() {
+        try {
+          const res  = await fetch('/api/blockchain-events');
+          const data = await res.json();
+
+          if (data.success) {
+            const events = data.events || [];
+
+            // Update chain status
+            const statusEl   = document.getElementById('chainStatus');
+            const statusText = document.getElementById('chainStatusText');
+            statusEl.className  = 'chain-status connected';
+            statusText.textContent = 'Hardhat node connected';
+
+            // Update table only if event count changed (avoids flicker)
+            if (events.length !== lastEventCount) {
+              document.getElementById('tableContainer').innerHTML = renderTable(events);
+              lastEventCount = events.length;
+            }
+
+            updateStats(events);
+          } else {
+            setDisconnected();
+          }
+        } catch (err) {
+          setDisconnected();
+        }
+      }
+
+      function setDisconnected() {
+        const statusEl   = document.getElementById('chainStatus');
+        const statusText = document.getElementById('chainStatusText');
+        statusEl.className     = 'chain-status disconnected';
+        statusText.textContent = 'Hardhat node not running';
+
+        document.getElementById('tableContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">⚠️</div>
+            <p>
+              Blockchain node is not running.<br>
+              <span style="font-size:0.85rem;">
+                Start it with: <code>cd blockchain &amp;&amp; npx hardhat node</code>
+              </span>
+            </p>
+          </div>
+        `;
+      }
+
+      // Initial load + auto-refresh every 5s
+      fetchEvents();
+      setInterval(fetchEvents, 5000);
+    </script>
+
+  </body>
+</html>

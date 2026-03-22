@@ -3,22 +3,122 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Hospital Interface - {{ hospital_id | replace('hospital', 'Hospital ') }}</title>
+    <title>{{ hospital_id | replace('_', ' ') | title }} — MedLedger-AI</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+      .domain-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.75rem;
+        margin: 1rem 0;
+      }
+      .domain-card {
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        padding: 1rem;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.15s ease;
+        background: var(--bg-primary);
+        user-select: none;
+      }
+      .domain-card:hover { border-color: var(--primary-teal); background: var(--bg-tertiary); }
+      .domain-card.selected {
+        border-color: var(--primary-teal);
+        background: var(--bg-tertiary);
+        box-shadow: 0 0 0 3px rgba(31,111,120,0.15);
+      }
+      .domain-card .domain-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+      .domain-card .domain-name { font-size: 0.85rem; font-weight: 600; color: var(--primary-dark); }
+      .domain-card.disabled     { opacity: 0.45; cursor: not-allowed; }
+      .domain-card .domain-tag  {
+        display: inline-block; font-size: 0.65rem;
+        padding: 0.1rem 0.4rem; border-radius: 8px;
+        margin-top: 0.3rem; font-weight: 600;
+      }
+      .tag-available { background: #d4edda; color: #155724; }
+      .tag-soon      { background: #fff3cd; color: #856404; }
+
+      .progress-bar-outer {
+        background: var(--bg-secondary); border-radius: 20px;
+        height: 22px; overflow: hidden; margin: 0.75rem 0;
+        border: 1px solid var(--border-color);
+      }
+      .progress-bar-inner {
+        height: 100%;
+        background: linear-gradient(90deg, var(--primary-teal), #2ecc71);
+        border-radius: 20px; transition: width 0.4s ease;
+        display: flex; align-items: center; justify-content: center;
+        color: white; font-size: 0.75rem; font-weight: 700; min-width: 2rem;
+      }
+      .log-terminal {
+        background: #1e1e1e; color: #d4d4d4;
+        font-family: var(--font-mono); font-size: 0.78rem;
+        padding: 1rem; border-radius: 4px; max-height: 220px;
+        overflow-y: auto; line-height: 1.6; margin-top: 0.75rem;
+      }
+      .log-terminal .log-line         { margin: 0; }
+      .log-terminal .log-line.success { color: #4ec9b0; }
+      .log-terminal .log-line.error   { color: #f48771; }
+      .log-terminal .log-line.info    { color: #9cdcfe; }
+
+      .status-badge {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.3rem 0.8rem; border-radius: 20px;
+        font-size: 0.82rem; font-weight: 600;
+      }
+      .status-pending  { background: #fff3cd; color: #856404; }
+      .status-training { background: #cce5ff; color: #004085; }
+      .status-done     { background: #d4edda; color: #155724; }
+      .status-failed   { background: #f8d7da; color: #721c24; }
+      .status-none     { background: var(--bg-secondary); color: var(--text-muted); }
+
+      .pulse { animation: pulse 1.5s infinite; }
+      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+      .metric-chips { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 0.5rem; }
+      .metric-chip {
+        background: var(--bg-secondary); border: 1px solid var(--border-color);
+        border-radius: 6px; padding: 0.4rem 0.8rem; font-size: 0.82rem;
+      }
+      .metric-chip strong { color: var(--primary-teal); }
+
+      .history-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+      .history-table th {
+        background: var(--bg-secondary); padding: 0.65rem 1rem;
+        text-align: left; font-weight: 600; font-size: 0.8rem;
+        text-transform: uppercase; letter-spacing: 0.04em;
+        color: var(--primary-dark); border-bottom: 2px solid var(--primary-teal);
+      }
+      .history-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--border-color); }
+
+      /* Agent status */
+      .agent-status-box {
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        padding: 0.4rem 0.9rem; border-radius: 20px; font-size: 0.82rem; font-weight: 600;
+      }
+      .agent-online  { background: #d4edda; color: #155724; }
+      .agent-offline { background: #f8d7da; color: #721c24; }
+      .agent-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+      .agent-online .agent-dot  { animation: pulse 2s infinite; }
+    </style>
   </head>
   <body>
+
     <header class="topbar">
       <div>
-        <h1>{{ hospital_id | replace('hospital', 'Hospital ') }}</h1>
+        <h1>{{ hospital_id | replace('_', ' ') | title }}</h1>
         <p class="subtitle">Federated Learning Participant</p>
       </div>
       <nav class="nav">
         <a href="/">Home</a>
+        <a href="/model-status">Model Status</a>
         <a href="/logout">Logout</a>
       </nav>
     </header>
 
     <main class="container">
+
       {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
           <div class="messages">
@@ -29,52 +129,479 @@
         {% endif %}
       {% endwith %}
 
+      <!-- ── FL Round Status ─────────────────────────────────────────────── -->
       <section class="card">
-        <h2>Institutional Status</h2>
-        <p>This institution is participating in the federated learning network.</p>
+        <h2>Federated Learning Status</h2>
+        <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+          <div>
+            <div class="muted" style="font-size:0.8rem;">Current Round</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--primary-teal);">
+              {{ round_status.current_round }}
+            </div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.8rem;">Network Submissions</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--primary-teal);">
+              {{ round_status.received_hospitals | length }} / {{ round_status.expected_hospitals }}
+            </div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.8rem;">Your Submissions</div>
+            <div style="font-size:2rem; font-weight:700; color:var(--primary-teal);">
+              {{ hospital_rounds | length }}
+            </div>
+          </div>
+          <div>
+            <div class="muted" style="font-size:0.8rem;">This Hospital</div>
+            <div style="margin-top:0.3rem;">
+              {% if hospital_id in round_status.received_hospitals %}
+                <span class="status-badge status-done">✓ Submitted Round {{ round_status.current_round - 1 }}</span>
+              {% else %}
+                <span class="status-badge status-none">⧗ Waiting to submit</span>
+              {% endif %}
+            </div>
+          </div>
+          <!-- Agent status -->
+          <div>
+            <div class="muted" style="font-size:0.8rem;">Agent Status</div>
+            <div style="margin-top:0.3rem;" id="agentStatusBox">
+              <span class="agent-status-box agent-offline">
+                <span class="agent-dot"></span> Checking...
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
 
+      <!-- ── Training Job Section ────────────────────────────────────────── -->
+      <section class="card" id="trainingSection">
+        <h2>Contribute to Training</h2>
+        <p style="color:var(--text-secondary); margin-bottom:1.5rem;">
+          Select a disease domain, provide your local dataset path, and start training.
+          Your patient data stays on this machine — only model weights are sent to the server.
+        </p>
+
+        <div id="jobForm">
+
+          <!-- Disease domain -->
+          <div style="margin-bottom:1.25rem;">
+            <label style="font-weight:600; display:block; margin-bottom:0.5rem;">Disease Domain</label>
+            <div class="domain-grid">
+              <div class="domain-card selected" data-domain="pneumonia" onclick="selectDomain(this)">
+                <div class="domain-icon">🫁</div>
+                <div class="domain-name">Pneumonia</div>
+                <span class="domain-tag tag-available">Available</span>
+              </div>
+              <div class="domain-card disabled" data-domain="bone_fracture">
+                <div class="domain-icon">🦴</div>
+                <div class="domain-name">Bone Fracture</div>
+                <span class="domain-tag tag-soon">Coming Soon</span>
+              </div>
+              <div class="domain-card disabled" data-domain="diabetic_retinopathy">
+                <div class="domain-icon">👁️</div>
+                <div class="domain-name">Diabetic Retinopathy</div>
+                <span class="domain-tag tag-soon">Coming Soon</span>
+              </div>
+              <div class="domain-card disabled" data-domain="brain_tumor">
+                <div class="domain-icon">🧠</div>
+                <div class="domain-name">Brain Tumor</div>
+                <span class="domain-tag tag-soon">Coming Soon</span>
+              </div>
+              <div class="domain-card disabled" data-domain="skin_lesion">
+                <div class="domain-icon">🔬</div>
+                <div class="domain-name">Skin Lesion</div>
+                <span class="domain-tag tag-soon">Coming Soon</span>
+              </div>
+            </div>
+            <input type="hidden" id="selectedDomain" value="pneumonia">
+          </div>
+
+          <!-- Dataset path — pre-filled from saved value -->
+          <div style="margin-bottom:1.25rem;">
+            <label for="datasetPath" style="font-weight:600; display:block; margin-bottom:0.5rem;">
+              Local Dataset Path
+            </label>
+            <input
+              type="text"
+              id="datasetPath"
+              value="{{ saved_dataset_path }}"
+              placeholder="e.g. C:\data\hospitals\hospital_1"
+              style="width:100%; padding:0.65rem 0.9rem; border:1px solid var(--border-color);
+                     border-radius:4px; font-size:0.9rem; font-family:var(--font-mono);
+                     box-sizing:border-box;"
+            >
+            <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.35rem;">
+              Folder must contain <code>train/</code>, <code>val/</code>, <code>test/</code>.
+              Path is saved automatically after first use.
+              Data never leaves your machine.
+            </p>
+          </div>
+
+          <!-- Epochs -->
+          <div style="margin-bottom:1.5rem;">
+            <label for="epochCount" style="font-weight:600; display:block; margin-bottom:0.5rem;">
+              Local Epochs
+            </label>
+            <select id="epochCount"
+              style="padding:0.6rem 0.9rem; border:1px solid var(--border-color);
+                     border-radius:4px; font-size:0.9rem; background:white;">
+              <option value="1">1 epoch (testing only)</option>
+              <option value="3">3 epochs (fast)</option>
+              <option value="5" selected>5 epochs (recommended)</option>
+              <option value="10">10 epochs (thorough)</option>
+            </select>
+          </div>
+
+          <!-- Error -->
+          <div id="formError" style="display:none; color:#721c24; background:#f8d7da;
+               padding:0.65rem 1rem; border-radius:4px; margin-bottom:1rem; font-size:0.88rem;">
+          </div>
+
+          <button onclick="startTraining()" id="startBtn" class="btn"
+            style="padding:0.75rem 2rem; font-size:1rem;">
+            ▶ Start Training
+          </button>
+
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-top:0.75rem;">
+            Make sure the <strong>hospital agent</strong> is running in a terminal:
+            <code>python hospital_agent.py --hospital-id {{ hospital_id }}</code>
+          </p>
+        </div>
+
+        <!-- Progress view -->
+        <div id="progressView" style="display:none;">
+          <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+            <span id="jobStatusBadge" class="status-badge status-pending">⏳ Pending</span>
+            <span id="jobDomainLabel" style="font-weight:600; color:var(--primary-dark);"></span>
+            <button onclick="cancelJob()" id="cancelBtn"
+              style="margin-left:auto; padding:0.3rem 0.8rem; font-size:0.8rem;
+                     background:none; border:1px solid var(--border-color);
+                     border-radius:4px; cursor:pointer; color:var(--text-secondary);">
+              Cancel
+            </button>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:0.3rem;">
+            <span id="epochLabel">Waiting for agent...</span>
+          </div>
+          <div class="progress-bar-outer">
+            <div class="progress-bar-inner" id="progressBar" style="width:0%">0%</div>
+          </div>
+          <div class="metric-chips" id="liveMetrics" style="display:none;">
+            <div class="metric-chip">Accuracy <strong id="liveAcc">—</strong></div>
+            <div class="metric-chip">Loss <strong id="liveLoss">—</strong></div>
+          </div>
+          <div class="log-terminal" id="logTerminal">
+            <p class="log-line info">Waiting for hospital agent to pick up job...</p>
+          </div>
+          <div id="doneView" style="display:none; margin-top:1rem;">
+            <div style="background:#d4edda; border-left:3px solid #27ae60; padding:1rem; border-radius:3px;">
+              <strong style="color:#155724;">✓ Training complete and weights submitted</strong>
+              <p style="margin:0.3rem 0 0; font-size:0.88rem; color:#155724;">
+                Check Admin Dashboard and Model Status to see updated metrics.
+              </p>
+            </div>
+            <button onclick="resetForm()" class="btn secondary" style="margin-top:1rem;">
+              Start Another Round
+            </button>
+          </div>
+          <div id="failedView" style="display:none; margin-top:1rem;">
+            <div style="background:#f8d7da; border-left:3px solid #c0392b; padding:1rem; border-radius:3px;">
+              <strong style="color:#721c24;">✗ Training failed</strong>
+              <p id="failedReason" style="margin:0.3rem 0 0; font-size:0.88rem; color:#721c24;"></p>
+            </div>
+            <button onclick="resetForm()" class="btn secondary" style="margin-top:1rem;">
+              Try Again
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Submission History — with real metrics ──────────────────────── -->
       <section class="card">
-        <h2>Training Participation Procedure</h2>
-        
-        <p>The federated learning workflow operates as follows:</p>
-        
-        <ol>
-          <li>The hospital performs local training using its internal dataset.</li>
-          <li>Raw patient data remains within the hospital infrastructure.</li>
-          <li>After local training, only model weights and performance metrics are generated.</li>
-          <li>The hospital submits these artifacts to the coordination server.</li>
-          <li>The aggregated global model is received for the next round.</li>
-        </ol>
-        
+        <h2>Submission History</h2>
+        {% if submission_history %}
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Round</th>
+                <th>Accuracy</th>
+                <th>Loss</th>
+                <th>F1 Score</th>
+                <th>DP</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in submission_history %}
+                <tr>
+                  <td><strong>Round {{ s.round }}</strong></td>
+                  <td style="color:var(--primary-teal); font-weight:600;">{{ s.accuracy }}%</td>
+                  <td>{{ s.loss }}</td>
+                  <td>{{ s.f1_score }}</td>
+                  <td>
+                    {% if s.dp_enabled %}
+                      <span style="color:#155724; font-size:0.8rem;">🔒 ON</span>
+                    {% else %}
+                      <span class="muted" style="font-size:0.8rem;">OFF</span>
+                    {% endif %}
+                  </td>
+                  <td class="muted">{{ s.timestamp }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="muted">No submissions yet. Start training to contribute.</p>
+        {% endif %}
+      </section>
+
+      <!-- ── Privacy Notice ──────────────────────────────────────────────── -->
+      <section class="card guide-card">
+        <div class="guide-card-title">Privacy Guarantee</div>
         <p>
-          The training process is executed locally within the hospital environment. Execution of the training procedure 
-          is performed through the provided Jupyter notebook (Medledger_rev2.ipynb). This notebook manages all aspects 
-          of local training, submission, and model updates.
+          Your patient data <strong>never leaves this machine</strong>.
+          The training process runs locally via the hospital agent.
+          Only trained model weights (parameter tensors) and summary
+          performance metrics are sent to the coordination server.
+          No images, no patient records, no raw data.
         </p>
       </section>
 
-      <section class="card">
-        <h2>Privacy and Data Protection</h2>
-        <p>
-          Patient data does not leave the hospital infrastructure. The server receives only model parameters and 
-          aggregated performance statistics. No patient-level information, demographic data, or clinical records are 
-          transmitted to the coordination server or to other institutions.
-        </p>
-      </section>
-
-      <section class="card">
-        <h2>Monitoring and Status</h2>
-        <p>
-          The current training round and aggregation status can be viewed from the 
-          <a href="/model-status">model status dashboard</a>. This dashboard displays round numbers, hospital submission 
-          counts, and aggregation progress.
-        </p>
-      </section>
     </main>
 
     <footer class="footer">
-      <p><strong>MedLedger-AI</strong> — Federated Learning System</p>
+      <p><strong>MedLedger-AI</strong> — Federated Learning Platform</p>
+      <p class="footer-disclaimer">
+        Developed by 22BKT0074 – Yash Sharma, 22BDS0320 – Ritamvaraa Sinha, 22BCE3505 – Anupam Khare
+      </p>
     </footer>
+
+    <script>
+      const HOSPITAL_ID  = "{{ hospital_id }}";
+      let   pollInterval = null;
+      let   currentStatus = null;
+
+      // ── Agent status polling ─────────────────────────────────────────────
+      async function checkAgentStatus() {
+        try {
+          const res  = await fetch('/api/agent-status');
+          const data = await res.json();
+          if (data.success) {
+            const info = data.agents[HOSPITAL_ID];
+            const box  = document.getElementById('agentStatusBox');
+            if (info && info.online) {
+              box.innerHTML = '<span class="agent-status-box agent-online"><span class="agent-dot"></span> Agent Online</span>';
+            } else {
+              box.innerHTML = '<span class="agent-status-box agent-offline"><span class="agent-dot"></span> Agent Offline</span>';
+            }
+          }
+        } catch(e) {}
+      }
+
+      // ── Save dataset path ────────────────────────────────────────────────
+      async function saveDatasetPath(path) {
+        try {
+          await fetch('/api/save-dataset-path', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({hospital_id: HOSPITAL_ID, dataset_path: path})
+          });
+        } catch(e) {}
+      }
+
+      // ── Domain selection ─────────────────────────────────────────────────
+      function selectDomain(card) {
+        if (card.classList.contains('disabled')) return;
+        document.querySelectorAll('.domain-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        document.getElementById('selectedDomain').value = card.dataset.domain;
+      }
+
+      // ── Start training ───────────────────────────────────────────────────
+      async function startTraining() {
+        const domain      = document.getElementById('selectedDomain').value;
+        const datasetPath = document.getElementById('datasetPath').value.trim();
+        const epochs      = parseInt(document.getElementById('epochCount').value);
+        const errorEl     = document.getElementById('formError');
+
+        if (!datasetPath) {
+          errorEl.textContent = 'Please enter the local dataset path.';
+          errorEl.style.display = 'block';
+          return;
+        }
+        errorEl.style.display = 'none';
+
+        // Save path for next time
+        await saveDatasetPath(datasetPath);
+
+        let roundNum = 1;
+        try {
+          const rs = await fetch('/api/round-status');
+          const rd = await rs.json();
+          roundNum = rd.current_round || 1;
+        } catch(e) {}
+
+        document.getElementById('startBtn').disabled    = true;
+        document.getElementById('startBtn').textContent = 'Creating job...';
+
+        try {
+          const res = await fetch('/api/start-training-job', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+              hospital_id:    HOSPITAL_ID,
+              disease_domain: domain,
+              dataset_path:   datasetPath,
+              epochs:         epochs,
+              round:          roundNum
+            })
+          });
+          const data = await res.json();
+          if (data.success) {
+            showProgressView(data.job);
+            startPolling();
+          } else {
+            errorEl.textContent = data.error || 'Failed to create job.';
+            errorEl.style.display = 'block';
+            document.getElementById('startBtn').disabled    = false;
+            document.getElementById('startBtn').textContent = '▶ Start Training';
+          }
+        } catch(e) {
+          errorEl.textContent = 'Cannot connect to server.';
+          errorEl.style.display = 'block';
+          document.getElementById('startBtn').disabled    = false;
+          document.getElementById('startBtn').textContent = '▶ Start Training';
+        }
+      }
+
+      function showProgressView(job) {
+        document.getElementById('jobForm').style.display      = 'none';
+        document.getElementById('progressView').style.display = 'block';
+        document.getElementById('jobDomainLabel').textContent = job.disease_name || job.disease_domain;
+        updateProgressUI(job);
+      }
+
+      function updateProgressUI(job) {
+        if (!job) return;
+        currentStatus = job.status;
+
+        const badge    = document.getElementById('jobStatusBadge');
+        const bar      = document.getElementById('progressBar');
+        const epochLbl = document.getElementById('epochLabel');
+        const metrics  = document.getElementById('liveMetrics');
+
+        const badgeMap = {
+          pending:   ['status-pending',  '⏳ Waiting for agent'],
+          training:  ['status-training', '⚙️ Training'],
+          done:      ['status-done',     '✓ Complete'],
+          failed:    ['status-failed',   '✗ Failed'],
+          cancelled: ['status-none',     '— Cancelled'],
+        };
+        const [cls, label] = badgeMap[job.status] || ['status-none', job.status];
+        badge.className  = `status-badge ${cls}`;
+        badge.textContent = label;
+
+        const pct = job.progress_pct || 0;
+        bar.style.width  = pct + '%';
+        bar.textContent  = pct + '%';
+
+        if      (job.status === 'training')  epochLbl.textContent = `Epoch ${job.current_epoch} / ${job.total_epochs}`;
+        else if (job.status === 'pending')   epochLbl.textContent = 'Waiting for hospital agent to pick up job...';
+        else if (job.status === 'done')      epochLbl.textContent = `Completed ${job.total_epochs} epochs`;
+        else if (job.status === 'failed')    epochLbl.textContent = 'Training failed';
+
+        if (job.latest_accuracy !== null && job.latest_accuracy !== undefined) {
+          metrics.style.display = 'flex';
+          document.getElementById('liveAcc').textContent  = (job.latest_accuracy * 100).toFixed(2) + '%';
+          document.getElementById('liveLoss').textContent = job.latest_loss ? job.latest_loss.toFixed(4) : '—';
+        }
+
+        if (job.logs && job.logs.length > 0) {
+          const terminal = document.getElementById('logTerminal');
+          terminal.innerHTML = job.logs.map(line => {
+            let c = 'log-line';
+            if (line.includes('ERROR') || line.includes('failed')) c += ' error';
+            else if (line.includes('✓') || line.includes('complete') || line.includes('submitted')) c += ' success';
+            else c += ' info';
+            return `<p class="${c}">${escapeHtml(line)}</p>`;
+          }).join('');
+          terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        if (job.status === 'done') {
+          document.getElementById('doneView').style.display   = 'block';
+          document.getElementById('cancelBtn').style.display  = 'none';
+          stopPolling();
+        }
+        if (job.status === 'failed') {
+          document.getElementById('failedView').style.display  = 'block';
+          document.getElementById('failedReason').textContent  = job.error || 'Unknown error';
+          document.getElementById('cancelBtn').style.display   = 'none';
+          stopPolling();
+        }
+      }
+
+      function startPolling() {
+        if (pollInterval) clearInterval(pollInterval);
+        pollInterval = setInterval(fetchJobStatus, 2000);
+      }
+      function stopPolling() {
+        if (pollInterval) clearInterval(pollInterval);
+        pollInterval = null;
+      }
+      async function fetchJobStatus() {
+        try {
+          const res  = await fetch(`/api/job-status/${HOSPITAL_ID}`);
+          const data = await res.json();
+          if (data.success && data.job) updateProgressUI(data.job);
+        } catch(e) {}
+      }
+
+      async function cancelJob() {
+        try {
+          await fetch(`/api/cancel-job/${HOSPITAL_ID}`, {method: 'POST'});
+          stopPolling();
+          resetForm();
+        } catch(e) {}
+      }
+
+      function resetForm() {
+        stopPolling();
+        document.getElementById('jobForm').style.display       = 'block';
+        document.getElementById('progressView').style.display  = 'none';
+        document.getElementById('doneView').style.display      = 'none';
+        document.getElementById('failedView').style.display    = 'none';
+        document.getElementById('startBtn').disabled           = false;
+        document.getElementById('startBtn').textContent        = '▶ Start Training';
+        document.getElementById('progressBar').style.width     = '0%';
+        document.getElementById('progressBar').textContent     = '0%';
+        document.getElementById('logTerminal').innerHTML       =
+          '<p class="log-line info">Waiting for hospital agent to pick up job...</p>';
+        document.getElementById('liveMetrics').style.display   = 'none';
+        document.getElementById('cancelBtn').style.display     = 'block';
+      }
+
+      function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      // ── Init ─────────────────────────────────────────────────────────────
+      (async function init() {
+        // Check for existing job
+        try {
+          const res  = await fetch(`/api/job-status/${HOSPITAL_ID}`);
+          const data = await res.json();
+          if (data.success && data.job && ['pending','training'].includes(data.job.status)) {
+            showProgressView(data.job);
+            startPolling();
+          }
+        } catch(e) {}
+
+        // Check agent status immediately and every 8s
+        checkAgentStatus();
+        setInterval(checkAgentStatus, 8000);
+      })();
+    </script>
+
   </body>
 </html>

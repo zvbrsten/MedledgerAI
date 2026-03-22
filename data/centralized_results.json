@@ -1,0 +1,86 @@
+{
+  "accuracy": 0.8109,
+  "precision": 0.7688,
+  "recall": 0.9974,
+  "f1_score": 0.8683,
+  "auc_roc": 0.9528,
+  "loss": 1.1028,
+  "epochs": 10,
+  "total_samples": 5216,
+  "num_hospitals": 5,
+  "training_time_seconds": 4244.9,
+  "timestamp": "2026-03-21T14:50:05.878374",
+  "training_history": [
+    {
+      "epoch": 1,
+      "train_loss": 0.0808,
+      "train_acc": 0.9732,
+      "val_loss": 1.7744,
+      "val_accuracy": 0.625
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.0214,
+      "train_acc": 0.9927,
+      "val_loss": 0.0613,
+      "val_accuracy": 1.0
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.0107,
+      "train_acc": 0.9964,
+      "val_loss": 0.0827,
+      "val_accuracy": 1.0
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.0169,
+      "train_acc": 0.9946,
+      "val_loss": 0.097,
+      "val_accuracy": 0.9375
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.0104,
+      "train_acc": 0.9971,
+      "val_loss": 0.2152,
+      "val_accuracy": 0.875
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.0131,
+      "train_acc": 0.9956,
+      "val_loss": 0.0344,
+      "val_accuracy": 1.0
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.0056,
+      "train_acc": 0.9981,
+      "val_loss": 0.6857,
+      "val_accuracy": 0.75
+    },
+    {
+      "epoch": 8,
+      "train_loss": 0.0051,
+      "train_acc": 0.9983,
+      "val_loss": 0.6584,
+      "val_accuracy": 0.75
+    },
+    {
+      "epoch": 9,
+      "train_loss": 0.0009,
+      "train_acc": 1.0,
+      "val_loss": 0.1338,
+      "val_accuracy": 1.0
+    },
+    {
+      "epoch": 10,
+      "train_loss": 0.0006,
+      "train_acc": 1.0,
+      "val_loss": 0.0185,
+      "val_accuracy": 1.0
+    }
+  ],
+  "note": "Centralized baseline \u2014 all hospital data combined. Privacy-violating. Used only for FL comparison."
+}

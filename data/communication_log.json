@@ -1,0 +1,363 @@
+{
+  "rounds": [
+    {
+      "round": 1,
+      "submissions": [
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:11:00.000619Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:13:13.934946Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:13:46.840475Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:14:16.865922Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:14:23.676090Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:39:19.037882Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:40:22.184029Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:40:44.297448Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:40:48.248804Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:40:49.923359Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:04:18.389773Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:04:39.989794Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:04:45.827146Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:04:47.442504Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:04:49.609922Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:47:33.712212Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:47:40.393762Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:47:43.665114Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:47:43.715740Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:47:45.340653Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:21:48.409111Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:22:11.079603Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:22:19.050065Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:22:23.439586Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:22:28.620214Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T20:41:13.672975Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T20:41:36.372859Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T20:43:20.138412Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T20:43:23.834630Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T20:46:30.746643Z"
+        }
+      ],
+      "total_mb": 1281.33,
+      "timestamp": "2026-03-20T17:10:59.997826Z"
+    },
+    {
+      "round": 2,
+      "submissions": [
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:25:27.905255Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:25:32.986649Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:25:36.277508Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:25:42.712635Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:25:42.826545Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:49:25.737699Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:49:31.802536Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:49:36.624088Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:49:37.623419Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T17:49:39.768457Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:11:56.928967Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:12:01.231881Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:12:10.675855Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:12:13.938678Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:12:15.909602Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:54:53.543681Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:55:11.315790Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:55:13.193000Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:55:15.634641Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T18:55:20.007347Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:39:06.220177Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:39:15.323516Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:39:23.646539Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:39:24.970561Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T19:39:28.179002Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T21:43:33.790120Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T21:44:20.360253Z"
+        },
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T21:44:24.612583Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T21:44:29.484951Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T21:44:29.537706Z"
+        }
+      ],
+      "total_mb": 1281.33,
+      "timestamp": "2026-03-20T17:25:27.905238Z"
+    },
+    {
+      "round": 3,
+      "submissions": [
+        {
+          "hospital_id": "hospital_4",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T23:47:45.635623Z"
+        },
+        {
+          "hospital_id": "hospital_5",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T23:47:50.198281Z"
+        },
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T23:48:03.607540Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T23:48:06.299016Z"
+        },
+        {
+          "hospital_id": "hospital_3",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-20T23:48:07.273174Z"
+        }
+      ],
+      "total_mb": 213.555,
+      "timestamp": "2026-03-20T23:47:45.635589Z"
+    },
+    {
+      "round": 4,
+      "submissions": [
+        {
+          "hospital_id": "hospital_1",
+          "size_mb": 42.711,
+          "timestamp": "2026-03-21T18:38:26.630940Z"
+        }
+      ],
+      "total_mb": 42.711,
+      "timestamp": "2026-03-21T18:38:26.630704Z"
+    }
+  ],
+  "total_mb_transmitted": 2818.926
+}

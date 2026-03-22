@@ -1,0 +1,22 @@
+# Dataset — too large for GitHub
+data/chest_xray/
+data/hospitals/
+data/hospitals_noniid/
+
+# Model weights — too large
+models/incoming/
+models/global/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pth
+
+# Node modules
+blockchain/node_modules/
+blockchain/cache/
+blockchain/artifacts/
+
+# Environment
+.env
+*.env

@@ -1,0 +1,15 @@
+{
+  "name": "medledger-blockchain",
+  "version": "1.0.0",
+  "description": "Local Hardhat blockchain for MedLedger-AI federated learning audit trail",
+  "scripts": {
+    "node":    "npx hardhat node",
+    "compile": "npx hardhat compile",
+    "deploy":  "npx hardhat run scripts/deploy.js --network localhost",
+    "test":    "npx hardhat test"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "hardhat": "^2.19.0"
+  }
+}

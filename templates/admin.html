@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Admin Dashboard - MedLedger-AI</title>
     <link rel="stylesheet" href="/static/style.css">
+    <style>
+      .agent-dot {
+        display: inline-block;
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        margin-right: 4px;
+        vertical-align: middle;
+      }
+      .dot-online  { background: #27ae60; animation: pulse 2s infinite; }
+      .dot-offline { background: #c0392b; }
+      @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    </style>
   </head>
   <body>
     <header class="topbar">
@@ -29,6 +41,7 @@
         {% endif %}
       {% endwith %}
 
+      <!-- ── Hospital Participation ──────────────────────────────────────── -->
       <section class="card">
         <h2>Hospital Participation Status (Current Round: {{ round_status.current_round }})</h2>
 
@@ -39,6 +52,7 @@
               <th>Model Submission Status</th>
               <th>Latest Submission</th>
               <th>Accuracy</th>
+              <th>Agent</th>
               <th>Access</th>
             </tr>
           </thead>
@@ -70,6 +84,9 @@
                     <span class="muted">—</span>
                   {% endif %}
                 </td>
+                <td id="agent-{{ h.id }}">
+                  <span class="muted" style="font-size:0.82rem;">—</span>
+                </td>
                 <td><a class="btn small" href="/hospital/{{ h.id }}">Access</a></td>
               </tr>
             {% endfor %}
@@ -81,18 +98,33 @@
             <strong>Round {{ round_status.current_round }} Status:</strong>
             <br/>
             {% if round_status.ready_for_aggregation %}
-              <strong>ALL HOSPITALS SUBMITTED - Aggregation Complete</strong>
+              <strong>ALL HOSPITALS SUBMITTED — Aggregation Complete</strong>
             {% else %}
               <span class="muted">{{ round_status.received_hospitals|length }} / {{ round_status.expected_hospitals }} hospitals submitted</span>
             {% endif %}
           </p>
         </div>
+
+        <!-- ── Reset Demo Button ─────────────────────────────────────────── -->
+        <div style="margin-top:1.5rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap; padding-top:1rem; border-top:1px solid var(--border-color);">
+          <button
+            onclick="resetDemo()"
+            id="resetBtn"
+            style="padding:0.6rem 1.4rem; background:#c0392b; color:white;
+                   border:none; border-radius:4px; cursor:pointer;
+                   font-size:0.88rem; font-weight:600;">
+            ⟳ Reset Demo (Round 1)
+          </button>
+          <span style="font-size:0.8rem; color:var(--text-muted);">
+            Clears all submissions, models, and metrics. Use before each demo run.
+          </span>
+        </div>
       </section>
 
+      <!-- ── Model Summary ───────────────────────────────────────────────── -->
       <section class="card">
         <h2>Model Summary</h2>
 
-        <!-- Model Summary Display -->
         {% if model_status.model_available %}
           <div class="field" style="background-color: #f5f5f5; padding: 1rem;">
             <h3 style="margin-top: 0;">Trained Model Ready</h3>
@@ -146,5 +178,56 @@
         Developed by 22BKT0074 – Yash Sharma, 22BDS0320 – Ritamvaraa Sinha, 22BCE3505 – Anupam Khare
       </p>
     </footer>
+
+    <script>
+      // ── Reset demo ────────────────────────────────────────────────────────
+      async function resetDemo() {
+        if (!confirm('Reset ALL federated learning data?\n\nThis clears all rounds, weights, and metrics.')) return;
+        const btn       = document.getElementById('resetBtn');
+        btn.disabled    = true;
+        btn.textContent = 'Resetting...';
+        try {
+          const res  = await fetch('/api/reset-demo', {method: 'POST'});
+          const data = await res.json();
+          if (data.success) {
+            alert('Demo reset complete. Ready for round 1.');
+            window.location.reload();
+          } else {
+            alert('Reset failed: ' + (data.error || 'unknown error'));
+            btn.disabled    = false;
+            btn.textContent = '⟳ Reset Demo (Round 1)';
+          }
+        } catch(e) {
+          alert('Cannot connect to server.');
+          btn.disabled    = false;
+          btn.textContent = '⟳ Reset Demo (Round 1)';
+        }
+      }
+
+      // ── Agent status ──────────────────────────────────────────────────────
+      async function updateAgentStatus() {
+        try {
+          const res  = await fetch('/api/agent-status');
+          const data = await res.json();
+          if (!data.success) return;
+
+          for (const [hid, info] of Object.entries(data.agents)) {
+            const cell = document.getElementById('agent-' + hid);
+            if (!cell) continue;
+            if (info.online) {
+              cell.innerHTML = '<span style="font-size:0.82rem; color:#155724; font-weight:600;">' +
+                '<span class="agent-dot dot-online"></span>Online</span>';
+            } else {
+              cell.innerHTML = '<span style="font-size:0.82rem; color:#721c24;">' +
+                '<span class="agent-dot dot-offline"></span>Offline</span>';
+            }
+          }
+        } catch(e) {}
+      }
+
+      updateAgentStatus();
+      setInterval(updateAgentStatus, 8000);
+    </script>
+
   </body>
 </html>

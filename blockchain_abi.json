@@ -1,0 +1,515 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "globalModelHash",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "hospitalsList",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "totalSamples",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "AggregationLogged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "hospitalId",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "LoginLogged",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "hospitalId",
+        "type": "string"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "string",
+        "name": "weightsHash",
+        "type": "string"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "accuracyX10000",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "numSamples",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "name": "SubmissionLogged",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "aggregations",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "globalModelHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "hospitalsList",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalSamples",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAggregation",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "roundNumber",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "globalModelHash",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "hospitalsList",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalSamples",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct MedLedger.AggregationEvent",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getAggregationCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getLogin",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "hospitalId",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct MedLedger.LoginEvent",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getLoginCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      }
+    ],
+    "name": "getSubmission",
+    "outputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "hospitalId",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "roundNumber",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "weightsHash",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "accuracyX10000",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "numSamples",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct MedLedger.SubmissionEvent",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getSubmissionCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "globalModelHash",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "hospitalsList",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "totalSamples",
+        "type": "uint256"
+      }
+    ],
+    "name": "logAggregation",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "hospitalId",
+        "type": "string"
+      }
+    ],
+    "name": "logLogin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "hospitalId",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "weightsHash",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "accuracyX10000",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numSamples",
+        "type": "uint256"
+      }
+    ],
+    "name": "logSubmission",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "logins",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "hospitalId",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "submissions",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "hospitalId",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "roundNumber",
+        "type": "uint256"
+      },
+      {
+        "internalType": "string",
+        "name": "weightsHash",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "accuracyX10000",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numSamples",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "timestamp",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

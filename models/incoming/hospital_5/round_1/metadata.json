@@ -1,6 +1,19 @@
 {
   "hospital_id": "hospital_5",
   "round": 1,
-  "num_samples": 510,
-  "timestamp": "2026-01-30T00:00:00Z"
+  "filename": "weights.pt",
+  "sha256": "ba56136282eaf50feeeff105a13b1d87f1457a198baba8a37d11f18b7c8d230b",
+  "file_size_bytes": 44785419,
+  "metrics": {
+    "accuracy": 0.859,
+    "loss": 0.9028,
+    "num_samples": 1043,
+    "precision": 0.8199,
+    "recall": 0.9923,
+    "f1_score": 0.8979,
+    "auc_roc": 0.9243,
+    "timestamp": "2026-03-20T20:46:30.730359Z"
+  },
+  "received_at": "2026-03-20T20:46:30.730359Z",
+  "uploader_ip": "127.0.0.1"
 }
