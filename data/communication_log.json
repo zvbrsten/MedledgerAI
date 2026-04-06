@@ -353,11 +353,16 @@
           "hospital_id": "hospital_1",
           "size_mb": 42.711,
           "timestamp": "2026-03-21T18:38:26.630940Z"
+        },
+        {
+          "hospital_id": "hospital_2",
+          "size_mb": 42.711,
+          "timestamp": "2026-04-06T06:29:46.058546Z"
         }
       ],
-      "total_mb": 42.711,
+      "total_mb": 85.422,
       "timestamp": "2026-03-21T18:38:26.630704Z"
     }
   ],
-  "total_mb_transmitted": 2818.926
+  "total_mb_transmitted": 2861.637
 }

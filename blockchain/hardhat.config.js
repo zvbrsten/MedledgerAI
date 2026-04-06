@@ -1,21 +1,22 @@
-require("@nomicfoundation/hardhat-toolbox");
+﻿require("@nomicfoundation/hardhat-toolbox");
+require("dotenv").config({ path: "C:\\Users\\zvbrs\\Desktop\\Medledeger2\\.env" });
 
-/** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
   solidity: "0.8.19",
   networks: {
-    // Local Hardhat network — runs on your machine, no internet needed
     hardhat: {
       chainId: 1337,
-      mining: {
-        auto: true,        // mine a block on every transaction
-        interval: 0
-      }
+      mining: { auto: true, interval: 0 }
     },
     localhost: {
       url: "http://127.0.0.1:8545",
       chainId: 1337
-    }
+    },
+    sepolia: {
+      url: process.env.ALCHEMY_URL,
+      accounts: [process.env.PRIVATE_KEY],
+      chainId: 11155111,
+    },
   },
   paths: {
     sources:   "./contracts",
